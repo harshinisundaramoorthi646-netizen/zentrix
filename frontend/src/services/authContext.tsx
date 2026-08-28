@@ -23,9 +23,19 @@ const ADMIN_RESTRICTED_SECTIONS = ['Team', 'Commission', 'Billing', 'Analytics',
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('zentrix_user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('zentrix_user');
+      if (!saved || saved === 'undefined' || saved === 'null') return null;
+      const parsed = JSON.parse(saved);
+      return (parsed && parsed.id && parsed.role) ? parsed : null;
+    } catch (err) {
+      console.warn('Invalid user session in localStorage. Clearing state.', err);
+      localStorage.removeItem('zentrix_user');
+      localStorage.removeItem('zentrix_token');
+      return null;
+    }
   });
+
 
   const [isLoadingSession, setIsLoadingSession] = useState<boolean>(true);
   const [activeSection, setActiveSectionState] = useState<string>('Overview');
