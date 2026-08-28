@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  
+  body {
+    background-color: #080A0F;
+    color: #F5F7FA;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+}
+
+/* Glassmorphism & Translucent Borders */
+.glass-panel {
+  background: rgba(17, 23, 34, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(22, 29, 41, 0.8) 0%, rgba(13, 17, 24, 0.6) 100%);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+.glass-input {
+  background: rgba(13, 17, 24, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #F5F7FA;
+}
+
+.glass-input:focus {
+  border-color: #C7FF3D;
+  outline: none;
+  box-shadow: 0 0 15px -3px rgba(199, 255, 61, 0.25);
+}
+
+/* Custom glowing effects */
+.glow-lime {
+  box-shadow: 0 0 25px -5px rgba(199, 255, 61, 0.3);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 25px -5px rgba(56, 232, 255, 0.3);
+}
+
+.glow-violet {
+  box-shadow: 0 0 25px -5px rgba(155, 124, 255, 0.3);
+}
+
+.glow-coral {
+  box-shadow: 0 0 25px -5px rgba(255, 122, 138, 0.3);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #080A0F;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C7FF3D;
+}
+
+/* Grid Pattern Background overlay */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Gradient Text */
+.text-gradient-lime {
+  background: linear-gradient(135deg, #F5F7FA 0%, #C7FF3D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-cyan {
+  background: linear-gradient(135deg, #38E8FF 0%, #9B7CFF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #FFC857 0%, #FF7A8A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
