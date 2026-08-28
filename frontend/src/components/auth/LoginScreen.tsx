@@ -219,36 +219,9 @@ export const LoginScreen: React.FC = () => {
               </p>
             </div>
 
-            {/* Quick Demo Credentials Badges */}
-            <div className="space-y-1.5 pt-1">
-              <span className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider block">QUICK DEMO ACCOUNTS (1-CLICK LOGIN):</span>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setDemoAccount('teama@zentrix.com', 'TeamA@123')}
-                  className="py-1.5 px-2 rounded-lg bg-[#38E8FF]/10 border border-[#38E8FF]/30 hover:bg-[#38E8FF]/20 text-[#38E8FF] text-[11px] font-mono font-bold flex items-center justify-center gap-1 transition-all cursor-pointer"
-                >
-                  <UserCheck className="w-3 h-3" /> Team A
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDemoAccount('admin@zentrix.com', 'Admin@123')}
-                  className="py-1.5 px-2 rounded-lg bg-[#C7FF3D]/10 border border-[#C7FF3D]/30 hover:bg-[#C7FF3D]/20 text-[#C7FF3D] text-[11px] font-mono font-bold flex items-center justify-center gap-1 transition-all cursor-pointer"
-                >
-                  <ShieldAlert className="w-3 h-3" /> Admin
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDemoAccount('teamb@zentrix.com', 'TeamB@123')}
-                  className="py-1.5 px-2 rounded-lg bg-[#9B7CFF]/10 border border-[#9B7CFF]/30 hover:bg-[#9B7CFF]/20 text-[#9B7CFF] text-[11px] font-mono font-bold flex items-center justify-center gap-1 transition-all cursor-pointer"
-                >
-                  <PhoneCall className="w-3 h-3" /> Team B
-                </button>
-              </div>
-            </div>
-
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
+
               
               {error && (
                 <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2 animate-shake font-mono">
