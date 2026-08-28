@@ -11,6 +11,7 @@ export interface User {
   status: 'active' | 'inactive';
   performanceScore?: number;
   leadsSubmitted?: number;
+  conversions?: number;
   callsCompleted?: number;
   qualifiedLeads?: number;
   dealsClosed?: number;
