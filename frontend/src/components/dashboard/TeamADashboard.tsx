@@ -136,8 +136,9 @@ export const TeamADashboard: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {myLeads
-            .filter(l => l.company.toLowerCase().includes(search.toLowerCase()) || l.id.toLowerCase().includes(search.toLowerCase()))
+            .filter(l => (l?.company || '').toLowerCase().includes((search || '').toLowerCase()) || (l?.id || '').toLowerCase().includes((search || '').toLowerCase()))
             .map(l => (
+
               <div key={l.id} className="p-4 rounded-2xl bg-[#111722]/90 backdrop-blur-md border border-white/10 hover:border-yellow-400/60 hover:bg-white/10 hover:backdrop-blur-xl hover:shadow-[0_8px_30px_rgba(255,215,0,0.25)] transition-all duration-300 transform hover:-translate-y-1 space-y-3 group">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono font-bold text-[#38E8FF] group-hover:text-yellow-300 transition-colors">{l.id}</span>

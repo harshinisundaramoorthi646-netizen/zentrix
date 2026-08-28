@@ -81,12 +81,14 @@ export const LeadManagement: React.FC = () => {
   };
 
   const filteredLeads = leads.filter(l => {
-    const matchesSearch = l.company.toLowerCase().includes(search.toLowerCase()) ||
-                          l.id.toLowerCase().includes(search.toLowerCase()) ||
-                          l.name.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'ALL' || l.status === statusFilter;
+    const q = (search || '').toLowerCase();
+    const matchesSearch = (l?.company || '').toLowerCase().includes(q) ||
+                          (l?.id || '').toLowerCase().includes(q) ||
+                          (l?.name || '').toLowerCase().includes(q);
+    const matchesStatus = statusFilter === 'ALL' || l?.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">

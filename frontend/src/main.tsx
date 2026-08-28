@@ -24,10 +24,16 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Zentrix Workspace Uncaught Error:', error, errorInfo);
+    try {
+      localStorage.clear();
+    } catch {}
   }
 
   private handleReset = () => {
-    localStorage.clear();
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch {}
     window.location.href = '/';
   };
 
@@ -46,7 +52,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
           </div>
           <button
             onClick={this.handleReset}
-            className="py-3 px-8 rounded-xl bg-gradient-to-r from-cyan-400 to-lime-400 text-black font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-all shadow-lg shadow-cyan-500/20"
+            className="py-3.5 px-8 rounded-xl bg-gradient-to-r from-cyan-400 to-lime-400 text-black font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-all shadow-lg shadow-cyan-500/20 cursor-pointer"
           >
             Reset Workspace & Reload
           </button>
