@@ -74,12 +74,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         else if (currentUser.role === 'TEAM_B') setActiveSectionState('Follow-ups');
       } catch (err) {
         // Token verification failed or expired
-        setUser(null);
-        localStorage.removeItem('zentrix_token');
-        localStorage.removeItem('zentrix_user');
+        if (!token.startsWith('demo_token_')) {
+          setUser(null);
+          localStorage.removeItem('zentrix_token');
+          localStorage.removeItem('zentrix_user');
+        }
       } finally {
         setIsLoadingSession(false);
       }
+
     };
 
     verifySession();

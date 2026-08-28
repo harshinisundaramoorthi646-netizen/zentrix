@@ -42,8 +42,10 @@ apiClient.interceptors.response.use(
   (error) => {
     const status = error.response?.status;
     const isLoginReq = error.config?.url?.includes('/auth/login');
+    const token = localStorage.getItem('zentrix_token');
+    const isDemoSession = !token || token.startsWith('demo_token_');
 
-    if ((status === 401 || status === 403) && !isLoginReq) {
+    if ((status === 401 || status === 403) && !isLoginReq && !isDemoSession) {
       localStorage.removeItem('zentrix_token');
       localStorage.removeItem('zentrix_user');
       window.dispatchEvent(new Event('zentrix_unauthorized'));
@@ -51,6 +53,7 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 
 // Helper for handling fallbacks when backend endpoint returns 404 or network error
 async function handleRequest<T>(apiCall: () => Promise<T>, fallbackData: T): Promise<T> {
