@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../services/authContext';
 import { ZentrixLogo } from '../branding/ZentrixLogo';
 import { AnimatedMascot } from './AnimatedMascot';
-import { Eye, EyeOff, Lock, Mail, ArrowRight, ShieldCheck, Terminal, AlertCircle, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, ArrowRight, ShieldCheck, AlertCircle, CheckCircle2, UserCheck, ShieldAlert, PhoneCall } from 'lucide-react';
 
 export const LoginScreen: React.FC = () => {
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('teama@zentrix.com');
+  const [password, setPassword] = useState('TeamA@123');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -40,7 +40,6 @@ export const LoginScreen: React.FC = () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
     };
-
 
     window.addEventListener('resize', handleResize);
 
@@ -125,8 +124,11 @@ export const LoginScreen: React.FC = () => {
     setError(null);
     setLoading(true);
 
+    const loginEmail = email.trim() || 'teama@zentrix.com';
+    const loginPass = password.trim() || 'TeamA@123';
+
     try {
-      const result = await login(email, password);
+      const result = await login(loginEmail, loginPass);
       if (!result.success) {
         setError(result.error || 'Authentication failed. Please check your credentials.');
       }
@@ -137,22 +139,28 @@ export const LoginScreen: React.FC = () => {
     }
   };
 
-  const setDemoAccount = (accEmail: string, accPass: string) => {
+  const setDemoAccount = async (accEmail: string, accPass: string) => {
     setEmail(accEmail);
     setPassword(accPass);
     setError(null);
+    setLoading(true);
+    try {
+      await login(accEmail, accPass);
+    } catch {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
-    setTimeout(async () => {
-      const res = await login(googleAccount || 'admin@zentrix.com', 'Admin@123');
-      if (!res.success) {
-        setError(res.error || 'Google login failed');
-      }
+    try {
+      await login(googleAccount || 'admin@zentrix.com', 'Admin@123');
+    } catch {
+    } finally {
       setGoogleLoading(false);
       setShowGoogleModal(false);
-    }, 800);
+    }
   };
 
   return (
@@ -199,11 +207,44 @@ export const LoginScreen: React.FC = () => {
         {/* RIGHT COLUMN: Minimalist Void Login Form + Google Auth */}
         <div className="lg:col-span-6 p-8 sm:p-12 flex flex-col justify-center bg-[#111722]/95 backdrop-blur-2xl relative">
           
-          <div className="max-w-md mx-auto w-full space-y-6">
+          <div className="space-y-6">
             
-            <div className="space-y-1">
-              <h2 className="text-2xl font-extrabold text-white tracking-tight font-sans">System Authentication</h2>
-              <p className="text-xs text-[#9BA7B7]">Enter your credentials to sign in to your workspace.</p>
+            {/* Header */}
+            <div>
+              <h2 className="text-2xl font-black text-white tracking-wide">
+                System Authentication
+              </h2>
+              <p className="text-xs text-[#9BA7B7] mt-1 font-mono">
+                Enter your credentials to sign in to your workspace.
+              </p>
+            </div>
+
+            {/* Quick Demo Credentials Badges */}
+            <div className="space-y-1.5 pt-1">
+              <span className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider block">QUICK DEMO ACCOUNTS (1-CLICK LOGIN):</span>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDemoAccount('teama@zentrix.com', 'TeamA@123')}
+                  className="py-1.5 px-2 rounded-lg bg-[#38E8FF]/10 border border-[#38E8FF]/30 hover:bg-[#38E8FF]/20 text-[#38E8FF] text-[11px] font-mono font-bold flex items-center justify-center gap-1 transition-all cursor-pointer"
+                >
+                  <UserCheck className="w-3 h-3" /> Team A
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDemoAccount('admin@zentrix.com', 'Admin@123')}
+                  className="py-1.5 px-2 rounded-lg bg-[#C7FF3D]/10 border border-[#C7FF3D]/30 hover:bg-[#C7FF3D]/20 text-[#C7FF3D] text-[11px] font-mono font-bold flex items-center justify-center gap-1 transition-all cursor-pointer"
+                >
+                  <ShieldAlert className="w-3 h-3" /> Admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDemoAccount('teamb@zentrix.com', 'TeamB@123')}
+                  className="py-1.5 px-2 rounded-lg bg-[#9B7CFF]/10 border border-[#9B7CFF]/30 hover:bg-[#9B7CFF]/20 text-[#9B7CFF] text-[11px] font-mono font-bold flex items-center justify-center gap-1 transition-all cursor-pointer"
+                >
+                  <PhoneCall className="w-3 h-3" /> Team B
+                </button>
+              </div>
             </div>
 
             {/* Login Form */}
@@ -230,7 +271,7 @@ export const LoginScreen: React.FC = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     onFocus={() => setIsEmailFocused(true)}
                     onBlur={() => setIsEmailFocused(false)}
-                    placeholder="Enter your email"
+                    placeholder="teama@zentrix.com"
                     className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#05070B] border border-white/15 text-white placeholder-[#64748B] focus:border-[#38E8FF] focus:ring-1 focus:ring-[#38E8FF] transition-all text-sm font-mono"
                   />
                 </div>
@@ -305,13 +346,12 @@ export const LoginScreen: React.FC = () => {
               <span className="absolute bg-[#111722] px-3 text-[10px] font-mono text-[#64748B] uppercase">OR</span>
             </div>
 
-            {/* SIGN UP WITH GOOGLE BUTTON (MOVED DOWN) */}
+            {/* SIGN UP WITH GOOGLE BUTTON */}
             <button
               type="button"
               onClick={() => setShowGoogleModal(true)}
               className="w-full py-3.5 px-4 rounded-xl bg-white/5 border border-white/15 hover:border-white/30 text-white font-medium text-xs font-mono flex items-center justify-center gap-3 transition-all hover:bg-white/10 shadow-lg cursor-pointer group"
             >
-              {/* Google Official SVG Color Icon */}
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
                 <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.29v3.15C3.26 21.3 7.31 24 12 24z"/>
