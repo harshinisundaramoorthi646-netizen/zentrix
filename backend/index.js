@@ -25,8 +25,23 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Root Health & Service Status Endpoint
+app.get('/', (req, res) => {
+  res.json({
+    status: 'online',
+    message: '⚡ ZENTRIX Express API Backend Service is Running Live!',
+    swaggerDocs: `${req.protocol}://${req.get('host')}/api-docs`,
+    apiBase: `${req.protocol}://${req.get('host')}/api`
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', mongoConnected: isMongoConnected, timestamp: new Date().toISOString() });
+});
+
 // Setup Swagger UI documentation with custom project theme
 setupSwagger(app);
+
 
 // Database connection state
 let isMongoConnected = false;
