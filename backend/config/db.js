@@ -1,8 +1,12 @@
 import mongoose from 'mongoose';
 
 export const connectDB = async () => {
-  const uri = process.env.MONGODB_URI;
-  if (!uri || uri.trim() === '' || process.env.DISCONNECT_DB === 'true') {
+  const defaultAtlasUri = 'mongodb+srv://Harshini:%23harsh@cluster0.nic8iuj.mongodb.net/zentrix_db?retryWrites=true&w=majority&appName=Cluster0';
+  const uri = (process.env.MONGODB_URI && process.env.MONGODB_URI.trim() !== '') 
+    ? process.env.MONGODB_URI 
+    : defaultAtlasUri;
+
+  if (process.env.DISCONNECT_DB === 'true') {
     if (mongoose.connection.readyState !== 0) {
       await mongoose.disconnect();
     }
@@ -12,6 +16,7 @@ export const connectDB = async () => {
 
   const primaryUri = uri;
   const localUri = 'mongodb://127.0.0.1:27017/zentrix_db';
+
 
 
   try {
