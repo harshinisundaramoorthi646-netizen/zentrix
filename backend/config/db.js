@@ -1,8 +1,18 @@
 import mongoose from 'mongoose';
 
 export const connectDB = async () => {
-  const primaryUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/zentrix_db';
+  const uri = process.env.MONGODB_URI;
+  if (!uri || uri.trim() === '' || process.env.DISCONNECT_DB === 'true') {
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
+    console.log('ℹ️ Database disconnected. Running backend in Standalone In-Memory Mode.');
+    return false;
+  }
+
+  const primaryUri = uri;
   const localUri = 'mongodb://127.0.0.1:27017/zentrix_db';
+
 
   try {
     const conn = await mongoose.connect(primaryUri, { serverSelectionTimeoutMS: 10000 });
