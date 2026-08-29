@@ -51,7 +51,9 @@ const AccessDeniedView: React.FC<{ role: string | null }> = ({ role }) => {
 const AppContent: React.FC = () => {
   const { isAuthenticated, isLoadingSession, role, activeSection, toastMessage } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
+
 
   // 1. Session verification loading state
   if (isLoadingSession) {
@@ -149,17 +151,26 @@ const AppContent: React.FC = () => {
 
       <div className="relative z-10 flex min-h-screen">
         {/* Navigation Sidebar */}
-        <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+        <Sidebar
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
+          mobileOpen={mobileOpen}
+          setMobileOpen={setMobileOpen}
+        />
 
         {/* Main Content Workspace */}
-        <div className={`flex-1 flex flex-col transition-all duration-300 ${collapsed ? 'pl-20' : 'pl-64'}`}>
-          <Header onOpenCommandPalette={() => setShowCommandPalette(true)} />
+        <div className={`flex-1 flex flex-col transition-all duration-300 w-full ${collapsed ? 'md:pl-20' : 'md:pl-64'}`}>
+          <Header
+            onOpenCommandPalette={() => setShowCommandPalette(true)}
+            onOpenMobileMenu={() => setMobileOpen(true)}
+          />
 
           <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
             {renderView()}
           </main>
         </div>
       </div>
+
 
       {/* Global Command Palette & Toast Notifications */}
       <CommandPalette isOpen={showCommandPalette} onClose={() => setShowCommandPalette(false)} />

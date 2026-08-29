@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../services/authContext';
-import { Search, Bell, Shield } from 'lucide-react';
+import { Search, Bell, Shield, Menu } from 'lucide-react';
 import { apiService } from '../../services/api';
 import { NotificationItem } from '../../types';
 
 interface HeaderProps {
   onOpenCommandPalette: () => void;
+  onOpenMobileMenu?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenCommandPalette }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenCommandPalette, onOpenMobileMenu }) => {
   const { user, role, activeSection } = useAuth();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [showNotifDrawer, setShowNotifDrawer] = useState(false);
@@ -26,14 +27,27 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCommandPalette }) => {
   return (
     <header className="sticky top-0 z-20 h-16 bg-[#0D1118]/90 backdrop-blur-xl border-b border-white/10 px-4 sm:px-8 flex items-center justify-between">
       
-      {/* Left Title & Subtitle */}
-      <div>
-        <h1 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-          <span>{activeSection}</span>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[#9BA7B7] font-mono font-normal">
-            ZENTRIX Core
-          </span>
-        </h1>
+      {/* Left Mobile Menu Toggle & Title */}
+      <div className="flex items-center gap-3">
+        {onOpenMobileMenu && (
+          <button
+            onClick={onOpenMobileMenu}
+            className="flex md:hidden items-center gap-2 p-2 rounded-xl bg-[#38E8FF]/10 border border-[#38E8FF]/30 text-[#38E8FF] hover:bg-[#38E8FF]/20 transition-all cursor-pointer"
+            title="Open Options Menu"
+          >
+            <Menu className="w-5 h-5" />
+            <span className="text-xs font-mono font-bold uppercase">Menu</span>
+          </button>
+        )}
+
+        <div>
+          <h1 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            <span>{activeSection}</span>
+            <span className="hidden sm:inline-block text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[#9BA7B7] font-mono font-normal">
+              ZENTRIX Core
+            </span>
+          </h1>
+        </div>
       </div>
 
       {/* Right Actions Header */}
@@ -101,9 +115,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCommandPalette }) => {
         </div>
 
         {/* User Role Badge */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-xl bg-[#0D1118] border border-white/10 text-xs">
+        <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 rounded-xl bg-[#0D1118] border border-white/10 text-xs">
           <Shield className="w-3.5 h-3.5 text-[#38E8FF]" />
-          <span className="text-white font-mono font-semibold">{user?.name}</span>
+          <span className="text-white font-mono font-semibold truncate max-w-[90px] sm:max-w-none">{user?.name}</span>
           <span className="text-[10px] text-[#38E8FF] font-mono font-bold">({role})</span>
         </div>
 
