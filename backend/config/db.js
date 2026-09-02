@@ -1,7 +1,13 @@
 import mongoose from 'mongoose';
 
 export const connectDB = async () => {
-  const uri = process.env.MONGODB_URI ? process.env.MONGODB_URI.trim() : '';
+  let uri = process.env.MONGODB_URI ? process.env.MONGODB_URI.trim() : '';
+
+  if (uri && uri.includes('#') && uri.includes('@')) {
+    uri = uri.replace(/(mongodb(?:\+srv)?:\/\/[^:]+:)([^@]+)(@.+)/, (match, prefix, pass, suffix) => {
+      return prefix + pass.replace(/#/g, '%23') + suffix;
+    });
+  }
 
   if (!uri) {
     console.warn('⚠️ MONGODB_URI is not set in environment. Running backend in Standalone In-Memory Mode.');
