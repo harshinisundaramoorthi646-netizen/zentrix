@@ -12,6 +12,7 @@ import { Toaster } from 'react-hot-toast';
 import { AdminDashboard } from './components/dashboard/AdminDashboard';
 import { TeamADashboard } from './components/dashboard/TeamADashboard';
 import { TeamBDashboard } from './components/dashboard/TeamBDashboard';
+import { TeamCDashboard } from './components/dashboard/TeamCDashboard';
 import { LeadManagement } from './components/leads/LeadManagement';
 import { TeamManagement } from './components/teams/TeamManagement';
 import { ContributionTracker } from './components/teams/ContributionTracker';
@@ -39,10 +40,10 @@ const AccessDeniedView: React.FC<{ role: string | null }> = ({ role }) => {
         Your role <strong className="text-[#38E8FF] uppercase">({role || 'User'})</strong> does not have permission to view this section.
       </p>
       <button
-        onClick={() => setActiveSection(role === 'TEAM_A' ? 'Lead Journey' : role === 'TEAM_B' ? 'Follow-ups' : 'Overview')}
+        onClick={() => setActiveSection('Overview')}
         className="py-2.5 px-6 rounded-xl bg-[#38E8FF] text-black font-bold text-xs font-mono tracking-wider uppercase hover:bg-[#22d6ed] transition-all"
       >
-        Return to My Dashboard
+        Return to Dashboard
       </button>
     </div>
   );
@@ -61,7 +62,7 @@ const AppContent: React.FC = () => {
       <div className="min-h-screen bg-[#05070B] flex flex-col items-center justify-center space-y-4">
         <AnimatedBackground />
         <div className="w-12 h-12 border-4 border-[#38E8FF] border-t-transparent rounded-full animate-spin z-10" />
-        <span className="text-xs font-mono text-[#38E8FF] uppercase tracking-widest z-10">Authenticating Session...</span>
+        <span className="text-xs font-mono text-[#38E8FF] uppercase tracking-widest z-10 font-bold">Authenticating Session...</span>
       </div>
     );
   }
@@ -83,22 +84,31 @@ const AppContent: React.FC = () => {
       case 'Overview':
         if (role === 'TEAM_A') return <TeamADashboard />;
         if (role === 'TEAM_B') return <TeamBDashboard />;
+        if (role === 'TEAM_C') return <TeamCDashboard />;
         return <AdminDashboard />;
 
+      case 'Team A':
+        if (role === 'TEAM_B' || role === 'TEAM_C') return <AccessDeniedView role={role} />;
+        return <TeamADashboard />;
+
+      case 'Team B':
+        if (role === 'TEAM_A' || role === 'TEAM_C') return <AccessDeniedView role={role} />;
+        return <TeamBDashboard />;
+
+      case 'Team C':
+        if (role === 'TEAM_A' || role === 'TEAM_B') return <AccessDeniedView role={role} />;
+        return <TeamCDashboard />;
+
       case 'Lead Journey':
-        if (role === 'TEAM_B') return <AccessDeniedView role={role} />;
         return <LeadManagement />;
 
       case 'Follow-ups':
-        if (role === 'TEAM_A') return <AccessDeniedView role={role} />;
         return <TeamBDashboard />;
 
       case 'Clients':
-        if (role !== 'ADMIN') return <AccessDeniedView role={role} />;
         return <ClientManagement />;
 
       case 'Projects':
-        if (role !== 'ADMIN') return <AccessDeniedView role={role} />;
         return <ProjectManagement />;
 
       case 'Tasks':
@@ -111,26 +121,12 @@ const AppContent: React.FC = () => {
         if (role !== 'ADMIN') return <AccessDeniedView role={role} />;
         return <TeamManagement />;
 
-      case 'Contributions':
-        if (role !== 'ADMIN') return <AccessDeniedView role={role} />;
-        return <ContributionTracker />;
-
-      case 'Commission':
-        if (role !== 'ADMIN') return <AccessDeniedView role={role} />;
-        return <CommissionTracker />;
-
-      case 'Billing':
-        if (role !== 'ADMIN') return <AccessDeniedView role={role} />;
-        return <BillingRevenue />;
-
+      case 'Reports':
       case 'Analytics':
         if (role !== 'ADMIN') return <AccessDeniedView role={role} />;
         return <ReportsAnalytics />;
 
-      case 'AI Intelligence':
-        if (role !== 'ADMIN') return <AccessDeniedView role={role} />;
-        return <AiIntelligenceLayer />;
-
+      case 'Activity History':
       case 'Audit Log':
         if (role !== 'ADMIN') return <AccessDeniedView role={role} />;
         return <AuditLogViewer />;
@@ -141,6 +137,7 @@ const AppContent: React.FC = () => {
       default:
         if (role === 'TEAM_A') return <TeamADashboard />;
         if (role === 'TEAM_B') return <TeamBDashboard />;
+        if (role === 'TEAM_C') return <TeamCDashboard />;
         return <AdminDashboard />;
     }
   };

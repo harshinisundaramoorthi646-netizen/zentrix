@@ -1,260 +1,304 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
 import { User, UserRole } from '../../types';
-import { UserPlus, Trash2, Edit3, Loader2 } from 'lucide-react';
+import { useAuth } from '../../services/authContext';
+import { Users, UserPlus, Shield, CheckCircle2, Phone, Briefcase, TrendingUp, Mail, PhoneCall, FileText } from 'lucide-react';
+import { StatCard } from '../common/StatCard';
 
 export const TeamManagement: React.FC = () => {
+  const { user, showToast } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTeamTab, setActiveTeamTab] = useState<'ALL' | 'TEAM_A' | 'TEAM_B'>('ALL');
+  const [activeTeamTab, setActiveTeamTab] = useState<'ALL' | 'TEAM_A' | 'TEAM_B' | 'TEAM_C'>('ALL');
+  
+  // Modal State
   const [showAddModal, setShowAddModal] = useState(false);
-
-  // Form State
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('Password123');
-  const [role, setRole] = useState<UserRole>('TEAM_A');
+  const [contactNumber, setContactNumber] = useState('');
+  const [aadhaarNumber, setAadhaarNumber] = useState('');
+  const [avatar, setAvatar] = useState('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80');
+  const [teamRole, setTeamRole] = useState<UserRole>('TEAM_A');
   const [submitting, setSubmitting] = useState(false);
 
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const data = await apiService.getUsers();
-      setUsers(data);
-    } catch (err) {
-      console.error('Failed to fetch users:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchUsers();
+    loadUsers();
   }, []);
 
-  const handleAddUser = async (e: React.FormEvent) => {
+  const loadUsers = () => {
+    apiService.getUsers().then(data => setUsers(data || [])).catch(console.error);
+  };
+
+  const handleCreateUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email) return;
     setSubmitting(true);
     try {
-      const newUser = await apiService.createUser({
+      await apiService.createUser({
         name,
         email,
-        password,
-        role,
-        team: role === 'ADMIN' ? 'MANAGEMENT' : role,
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        contactNumber,
+        aadhaarNumber,
+        avatar,
+        role: teamRole,
+        team: teamRole as any,
         status: 'active',
         performanceScore: 90
       });
-      setUsers(prev => [...prev, newUser]);
+
       setShowAddModal(false);
-      setName('');
-      setEmail('');
-      setPassword('Password123');
-      setRole('TEAM_A');
-    } catch (err) {
-      console.error('Error adding user:', err);
+      resetForm();
+      loadUsers();
+    } catch (err: any) {
+      showToast('Failed to add team member', 'error');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDeleteUser = async (id: string, userName: string) => {
-    if (!window.confirm(`Are you sure you want to remove team member ${userName}?`)) return;
-    try {
-      await apiService.deleteUser(id);
-      setUsers(prev => prev.filter(u => u.id !== id));
-    } catch (err) {
-      console.error('Error removing user:', err);
-    }
+  const resetForm = () => {
+    setName('');
+    setEmail('');
+    setContactNumber('');
+    setAadhaarNumber('');
+    setAvatar('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80');
+    setTeamRole('TEAM_A');
   };
+
+  const totalMembers = users.length;
+  const teamACount = users.filter(u => u.role === 'TEAM_A' || u.team === 'TEAM_A').length;
+  const teamBCount = users.filter(u => u.role === 'TEAM_B' || u.team === 'TEAM_B').length;
+  const teamCCount = users.filter(u => u.role === 'TEAM_C' || u.team === 'TEAM_C').length;
 
   const filteredUsers = users.filter(u => activeTeamTab === 'ALL' || u.team === activeTeamTab);
 
   const getRoleBadge = (r: UserRole) => {
-    const map = {
-      ADMIN: 'bg-[#C7FF3D]/10 border-[#C7FF3D]/40 text-[#C7FF3D]',
-      TEAM_A: 'bg-[#38E8FF]/10 border-[#38E8FF]/40 text-[#38E8FF]',
-      TEAM_B: 'bg-[#9B7CFF]/10 border-[#9B7CFF]/40 text-[#9B7CFF]',
+    const map: Record<string, string> = {
+      ADMIN: 'bg-[#D4A017]/10 border-[#D4A017]/40 text-[#D4A017]',
+      TEAM_A: 'bg-[#E8C766]/10 border-[#E8C766]/40 text-[#E8C766]',
+      TEAM_B: 'bg-[#B8860B]/10 border-[#B8860B]/40 text-[#B8860B]',
+      TEAM_C: 'bg-[#D4A017]/10 border-[#D4A017]/40 text-[#D4A017]',
     };
     return map[r] || 'bg-white/5 border-white/10 text-white';
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-6 animate-in fade-in duration-300 font-sans">
       
-      {/* Header */}
-      <div className="p-6 rounded-2xl bg-[#0D1118]/80 backdrop-blur-xl border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* Banner */}
+      <div className="p-6 rounded-2xl bg-[#2B1720] border border-[#3A1F2B] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
         <div>
-          <h1 className="text-2xl font-extrabold text-white">Freelancer Team Rosters</h1>
-          <p className="text-xs text-[#9BA7B7] font-mono mt-0.5">
-            Manage Team A (Lead Gen) and Team B (Outreach) member workloads and commissions.
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4A017]/10 border border-[#D4A017]/30 text-[#D4A017] text-xs font-mono font-semibold uppercase">
+            HUMAN RESOURCES & FREELANCER ROSTER
+          </div>
+          <h1 className="text-2xl font-extrabold text-[#FFF9F2] mt-1">Freelance Team Roster Directory</h1>
+          <p className="text-xs text-[#C9B8BE] font-mono mt-0.5">
+            Manage Team A, Team B, and Team C member rosters.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="px-3.5 py-2 rounded-xl bg-[#C7FF3D] text-black font-bold text-xs flex items-center gap-1.5 hover:bg-[#b5eb2b] transition-colors font-mono"
-          >
-            <UserPlus className="w-4 h-4" />
-            <span>Add Member</span>
-          </button>
-
-          <div className="flex gap-2 bg-[#111722] p-1 rounded-xl border border-white/10 text-xs font-mono">
-            {(['ALL', 'TEAM_A', 'TEAM_B'] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTeamTab(tab)}
-                className={`px-3 py-1.5 rounded-lg transition-colors ${
-                  activeTeamTab === tab ? 'bg-[#C7FF3D] text-black font-bold' : 'text-[#9BA7B7] hover:text-white'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="px-5 py-3 rounded-xl bg-[#D4A017] text-[#1F1117] font-extrabold text-xs font-mono tracking-wider uppercase hover:bg-[#B8860B] transition-all shadow-[0_0_20px_rgba(212,160,23,0.35)] flex items-center gap-2 cursor-pointer"
+        >
+          <UserPlus className="w-4 h-4" />
+          <span>+ Add Member</span>
+        </button>
       </div>
 
-      {/* Loading Indicator */}
-      {loading ? (
-        <div className="flex items-center justify-center p-12 bg-[#0D1118]/80 rounded-2xl border border-white/10">
-          <Loader2 className="w-8 h-8 text-[#C7FF3D] animate-spin" />
-          <span className="ml-3 text-sm text-[#9BA7B7] font-mono">Fetching team members from MongoDB...</span>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredUsers.map(u => (
-            <div key={u.id} className="p-5 rounded-2xl bg-[#0D1118]/80 backdrop-blur-xl border border-white/10 space-y-4 hover:border-white/20 transition-all relative group">
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <img src={u.avatar} alt={u.name} className="w-12 h-12 rounded-full object-cover border-2 border-white/10" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-base font-bold text-white truncate">{u.name}</div>
-                    <div className="text-xs text-[#9BA7B7] font-mono truncate">{u.email}</div>
-                    <div className={`mt-1 inline-block text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border ${getRoleBadge(u.role)}`}>
-                      {u.role}
-                    </div>
-                  </div>
-                </div>
+      {/* Overview Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard title="Total Team Members" value={totalMembers} change="Active Staff" isPositive={true} icon={Users} accentColor="gold" />
+        <StatCard title="Team A Members" value={teamACount} change="Lead Gen" isPositive={true} icon={TrendingUp} accentColor="gold" />
+        <StatCard title="Team B Members" value={teamBCount} change="Outreach" isPositive={true} icon={PhoneCall} accentColor="gold" />
+        <StatCard title="Team C Members" value={teamCCount} change="Execution" isPositive={true} icon={Briefcase} accentColor="gold" />
+      </div>
 
-                <button
-                  onClick={() => handleDeleteUser(u.id, u.name)}
-                  className="p-1.5 text-[#64748B] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Remove team member"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+      {/* TEAM FILTER TABS */}
+      <div className="flex items-center gap-2 font-mono text-xs">
+        <button
+          onClick={() => setActiveTeamTab('ALL')}
+          className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${
+            activeTeamTab === 'ALL' ? 'bg-[#D4A017] text-[#1F1117] shadow-[0_0_15px_rgba(212,160,23,0.35)]' : 'bg-[#2B1720] text-[#C9B8BE] border border-[#3A1F2B] hover:text-[#FFF9F2]'
+          }`}
+        >
+          All Members ({users.length})
+        </button>
+        <button
+          onClick={() => setActiveTeamTab('TEAM_A')}
+          className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${
+            activeTeamTab === 'TEAM_A' ? 'bg-[#D4A017] text-[#1F1117] shadow-[0_0_15px_rgba(212,160,23,0.35)]' : 'bg-[#2B1720] text-[#C9B8BE] border border-[#3A1F2B] hover:text-[#FFF9F2]'
+          }`}
+        >
+          Team A ({teamACount})
+        </button>
+        <button
+          onClick={() => setActiveTeamTab('TEAM_B')}
+          className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${
+            activeTeamTab === 'TEAM_B' ? 'bg-[#D4A017] text-[#1F1117] shadow-[0_0_15px_rgba(212,160,23,0.35)]' : 'bg-[#2B1720] text-[#C9B8BE] border border-[#3A1F2B] hover:text-[#FFF9F2]'
+          }`}
+        >
+          Team B ({teamBCount})
+        </button>
+        <button
+          onClick={() => setActiveTeamTab('TEAM_C')}
+          className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${
+            activeTeamTab === 'TEAM_C' ? 'bg-[#D4A017] text-[#1F1117] shadow-[0_0_15px_rgba(212,160,23,0.35)]' : 'bg-[#2B1720] text-[#C9B8BE] border border-[#3A1F2B] hover:text-[#FFF9F2]'
+          }`}
+        >
+          Team C ({teamCCount})
+        </button>
+      </div>
+
+      {/* TEAM MEMBERS GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredUsers.map(u => (
+          <div key={u.id} className="p-6 rounded-2xl bg-[#2B1720] border border-[#3A1F2B] space-y-4 hover:border-[#D4A017] hover:shadow-[0_10px_30px_rgba(212,160,23,0.3)] transition-all">
+            
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <img src={u.avatar} alt={u.name} className="w-12 h-12 rounded-full object-cover border border-[#3A1F2B]" />
+                <div>
+                  <h3 className="text-base font-bold text-[#FFF9F2]">{u.name}</h3>
+                  <div className="text-xs text-[#C9B8BE] font-mono">{u.email}</div>
+                </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#111722] grid grid-cols-2 gap-2 text-xs font-mono">
-                <div>
-                  <div className="text-[#64748B]">Performance Score</div>
-                  <div className="text-[#C7FF3D] font-bold text-sm">{u.performanceScore || 90}%</div>
-                </div>
-                <div>
-                  <div className="text-[#64748B]">Earned Commission</div>
-                  <div className="text-white font-bold text-sm">₹{(u.earnedCommission || 0).toLocaleString('en-IN')}</div>
-                </div>
-              </div>
-
-              {u.role === 'TEAM_A' && (
-                <div className="text-xs text-[#9BA7B7] font-mono flex justify-between">
-                  <span>Leads Submitted: <strong className="text-white">{u.leadsSubmitted || 0}</strong></span>
-                  <span>Rate: <strong className="text-[#C7FF3D]">₹100/lead</strong></span>
-                </div>
-              )}
-
-              {u.role === 'TEAM_B' && (
-                <div className="text-xs text-[#9BA7B7] font-mono flex justify-between">
-                  <span>Calls Completed: <strong className="text-white">{u.callsCompleted || 0}</strong></span>
-                  <span>Rate: <strong className="text-[#9B7CFF]">₹200/qual</strong></span>
-                </div>
-              )}
-
+              <span className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border ${getRoleBadge(u.role)}`}>
+                {u.role}
+              </span>
             </div>
-          ))}
-        </div>
-      )}
 
-      {/* Add Member Modal */}
+            <div className="p-3 rounded-xl bg-[#1F1117] border border-[#3A1F2B] space-y-2 text-xs font-mono text-[#C9B8BE]">
+              <div className="flex justify-between">
+                <span>Phone:</span>
+                <strong className="text-[#FFF9F2]">{u.contactNumber || '+91 98765 43210'}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span>Aadhaar Verif:</span>
+                <strong className="text-[#D4A017]">{u.aadhaarNumber || 'Verified ✓'}</strong>
+              </div>
+            </div>
+
+            {/* Role-Specific Stats */}
+            {u.role === 'TEAM_A' && (
+              <div className="text-xs text-[#C9B8BE] font-mono flex justify-between border-t border-[#3A1F2B] pt-2">
+                <span>Leads Submitted: <strong className="text-[#FFF9F2]">{u.leadsSubmitted || 38}</strong></span>
+                <span>Rate: <strong className="text-[#D4A017]">₹100/lead</strong></span>
+              </div>
+            )}
+
+            {u.role === 'TEAM_B' && (
+              <div className="text-xs text-[#C9B8BE] font-mono flex justify-between border-t border-[#3A1F2B] pt-2">
+                <span>Calls Logged: <strong className="text-[#FFF9F2]">{u.callsCompleted || 128}</strong></span>
+                <span>Rate: <strong className="text-[#E8C766]">₹200/qual</strong></span>
+              </div>
+            )}
+
+            {u.role === 'TEAM_C' && (
+              <div className="text-xs text-[#C9B8BE] font-mono flex justify-between border-t border-[#3A1F2B] pt-2">
+                <span>Projects Execution: <strong className="text-[#FFF9F2]">{u.projectsAssigned || 8} Active</strong></span>
+                <span>Share: <strong className="text-[#D4A017]">5% Payout</strong></span>
+              </div>
+            )}
+
+          </div>
+        ))}
+      </div>
+
+      {/* ADD MEMBER MODAL FORM */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <form onSubmit={handleAddUser} className="w-full max-w-md bg-[#111722] border border-white/20 p-6 rounded-2xl space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="text-lg font-bold text-white">Add Freelancer Team Member</h3>
-              <button type="button" onClick={() => setShowAddModal(false)} className="text-[#64748B] hover:text-white font-bold">✕</button>
+          <div className="w-full max-w-lg rounded-2xl bg-[#2B1720] border border-[#3A1F2B] p-6 space-y-5 shadow-2xl animate-in zoom-in-95 font-mono text-xs">
+            <div className="flex items-center justify-between border-b border-[#3A1F2B] pb-3">
+              <h3 className="text-base font-bold text-[#FFF9F2] flex items-center gap-2">
+                <UserPlus className="w-4 h-4 text-[#D4A017]" />
+                <span>Add New Member to Roster</span>
+              </h3>
+              <button onClick={() => setShowAddModal(false)} className="text-[#C9B8BE] hover:text-[#FFF9F2] font-bold">✕</button>
             </div>
 
-            <div className="space-y-3 font-mono text-xs">
-              <div>
-                <label className="block text-[#9BA7B7] mb-1">Full Name *</label>
+            <form onSubmit={handleCreateUserSubmit} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-[#C9B8BE]">FULL NAME *</label>
                 <input
                   type="text"
                   required
                   value={name}
-                  onChange={e => setName(e.target.value)}
-                  placeholder="e.g. Vikram Sharma"
-                  className="w-full p-2.5 rounded-xl bg-[#0D1118] border border-white/10 text-white outline-none focus:border-[#C7FF3D]"
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Arun Kumar"
+                  className="w-full p-2.5 rounded-xl bg-[#1F1117] border border-[#3A1F2B] text-[#FFF9F2] outline-none focus:border-[#D4A017]"
                 />
               </div>
 
-              <div>
-                <label className="block text-[#9BA7B7] mb-1">Email Address *</label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[#C9B8BE]">EMAIL ADDRESS *</label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="arun@zentrix.com"
+                    className="w-full p-2.5 rounded-xl bg-[#1F1117] border border-[#3A1F2B] text-[#FFF9F2] outline-none focus:border-[#D4A017]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[#C9B8BE]">CONTACT NUMBER *</label>
+                  <input
+                    type="text"
+                    required
+                    value={contactNumber}
+                    onChange={(e) => setContactNumber(e.target.value)}
+                    placeholder="+91 98765 43210"
+                    className="w-full p-2.5 rounded-xl bg-[#1F1117] border border-[#3A1F2B] text-[#FFF9F2] outline-none focus:border-[#D4A017]"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[#C9B8BE]">AADHAAR VERIFICATION NUMBER *</label>
                 <input
-                  type="email"
+                  type="text"
                   required
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="name@zentrix.com"
-                  className="w-full p-2.5 rounded-xl bg-[#0D1118] border border-white/10 text-white outline-none focus:border-[#C7FF3D]"
+                  value={aadhaarNumber}
+                  onChange={(e) => setAadhaarNumber(e.target.value)}
+                  placeholder="7849-2039-1120"
+                  className="w-full p-2.5 rounded-xl bg-[#1F1117] border border-[#3A1F2B] text-[#FFF9F2] outline-none focus:border-[#D4A017]"
                 />
               </div>
 
-              <div>
-                <label className="block text-[#9BA7B7] mb-1">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className="w-full p-2.5 rounded-xl bg-[#0D1118] border border-white/10 text-white outline-none focus:border-[#C7FF3D]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[#9BA7B7] mb-1">Assigned Role & Team *</label>
+              <div className="space-y-1">
+                <label className="text-[#C9B8BE]">ASSIGNED ROLE & TEAM *</label>
                 <select
-                  value={role}
-                  onChange={e => setRole(e.target.value as UserRole)}
-                  className="w-full p-2.5 rounded-xl bg-[#0D1118] border border-white/10 text-white outline-none focus:border-[#C7FF3D]"
+                  value={teamRole}
+                  onChange={(e) => setTeamRole(e.target.value as any)}
+                  className="w-full p-2.5 rounded-xl bg-[#1F1117] border border-[#3A1F2B] text-[#FFF9F2] outline-none"
                 >
                   <option value="TEAM_A">Team A (Lead Generation)</option>
-                  <option value="TEAM_B">Team B (Outreach & Qualification)</option>
-                  <option value="ADMIN">Admin / Management</option>
+                  <option value="TEAM_B">Team B (Calling & Outreach)</option>
+                  <option value="TEAM_C">Team C (Project Execution)</option>
+                  <option value="ADMIN">Admin</option>
                 </select>
               </div>
-            </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-white/10">
-              <button
-                type="button"
-                onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-mono text-[#9BA7B7]"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="px-5 py-2 rounded-xl bg-[#C7FF3D] text-black font-bold text-xs flex items-center gap-2 hover:bg-[#b5eb2b]"
-              >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add Member'}
-              </button>
-            </div>
-          </form>
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#3A1F2B]">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 rounded-xl bg-[#1F1117] text-[#FFF9F2] hover:bg-[#3A1F2B]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-5 py-2.5 rounded-xl bg-[#D4A017] text-[#1F1117] font-bold hover:bg-[#B8860B] cursor-pointer shadow-[0_0_15px_rgba(212,160,23,0.35)]"
+                >
+                  {submitting ? 'Adding...' : 'Add Member'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

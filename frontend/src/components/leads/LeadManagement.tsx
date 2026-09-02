@@ -26,7 +26,8 @@ export const LeadManagement: React.FC = () => {
     setLoading(true);
     try {
       const data = await apiService.getLeads();
-      setLeads(data);
+      const unique = Array.from(new Map((data || []).map((item: Lead) => [item.id, item])).values());
+      setLeads(unique as Lead[]);
     } catch (err) {
       console.error('Error fetching leads:', err);
     } finally {
@@ -65,7 +66,7 @@ export const LeadManagement: React.FC = () => {
         },
         'Admin'
       );
-      setLeads(prev => [created, ...prev]);
+      setLeads(prev => [created, ...prev.filter(l => l.id !== created.id)]);
       setShowCreateModal(false);
       setNewCompany('');
       setNewName('');

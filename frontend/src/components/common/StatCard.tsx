@@ -8,7 +8,7 @@ interface StatCardProps {
   isPositive?: boolean;
   subtitle?: string;
   icon: LucideIcon;
-  accentColor?: 'lime' | 'cyan' | 'violet' | 'coral';
+  accentColor?: 'lime' | 'cyan' | 'violet' | 'coral' | 'blue' | 'teal' | 'indigo' | 'mint' | 'lavender' | 'sky' | 'pink' | 'emerald' | 'mauve' | 'gold';
 }
 
 export const StatCard: React.FC<StatCardProps> = ({
@@ -18,35 +18,52 @@ export const StatCard: React.FC<StatCardProps> = ({
   isPositive = true,
   subtitle = 'vs last month',
   icon: Icon,
-  accentColor = 'lime'
+  accentColor = 'gold'
 }) => {
-  const accentStyles = {
-    lime: 'text-[#C7FF3D] bg-[#C7FF3D]/10 border-[#C7FF3D]/30 group-hover:shadow-[0_0_20px_rgba(199,255,61,0.2)]',
-    cyan: 'text-[#38E8FF] bg-[#38E8FF]/10 border-[#38E8FF]/30 group-hover:shadow-[0_0_20px_rgba(56,232,255,0.2)]',
-    violet: 'text-[#9B7CFF] bg-[#9B7CFF]/10 border-[#9B7CFF]/30 group-hover:shadow-[0_0_20px_rgba(155,124,255,0.2)]',
-    coral: 'text-[#FF7A8A] bg-[#FF7A8A]/10 border-[#FF7A8A]/30 group-hover:shadow-[0_0_20px_rgba(255,122,138,0.2)]',
+  const accentStyles: Record<string, string> = {
+    gold: 'text-[#D4A017] bg-[#D4A017]/10 border-[#D4A017]/30 group-hover:shadow-[0_0_20px_rgba(212,160,23,0.35)]',
+    blue: 'text-[#D4A017] bg-[#D4A017]/10 border-[#D4A017]/30 group-hover:shadow-[0_0_20px_rgba(212,160,23,0.35)]',
+    teal: 'text-[#E8C766] bg-[#E8C766]/10 border-[#E8C766]/30 group-hover:shadow-[0_0_20px_rgba(232,199,102,0.35)]',
+    mint: 'text-[#E8C766] bg-[#E8C766]/10 border-[#E8C766]/30 group-hover:shadow-[0_0_20px_rgba(232,199,102,0.35)]',
+    cyan: 'text-[#E8C766] bg-[#E8C766]/10 border-[#E8C766]/30 group-hover:shadow-[0_0_20px_rgba(232,199,102,0.35)]',
+    emerald: 'text-[#22C55E] bg-[#22C55E]/10 border-[#22C55E]/30 group-hover:shadow-[0_0_20px_rgba(34,197,94,0.3)]',
+    lime: 'text-[#22C55E] bg-[#22C55E]/10 border-[#22C55E]/30 group-hover:shadow-[0_0_20px_rgba(34,197,94,0.3)]',
+    indigo: 'text-[#D4A017] bg-[#D4A017]/10 border-[#D4A017]/30 group-hover:shadow-[0_0_20px_rgba(212,160,23,0.35)]',
+    violet: 'text-[#D4A017] bg-[#D4A017]/10 border-[#D4A017]/30 group-hover:shadow-[0_0_20px_rgba(212,160,23,0.35)]',
+    mauve: 'text-[#D4A017] bg-[#D4A017]/10 border-[#D4A017]/30 group-hover:shadow-[0_0_20px_rgba(212,160,23,0.35)]',
+    lavender: 'text-[#E8C766] bg-[#E8C766]/10 border-[#E8C766]/30 group-hover:shadow-[0_0_20px_rgba(232,199,102,0.35)]',
+    sky: 'text-[#E8C766] bg-[#E8C766]/10 border-[#E8C766]/30 group-hover:shadow-[0_0_20px_rgba(232,199,102,0.35)]',
+    coral: 'text-[#EF4444] bg-[#EF4444]/10 border-[#EF4444]/30 group-hover:shadow-[0_0_20px_rgba(239,68,68,0.3)]',
+    pink: 'text-[#D4A017] bg-[#D4A017]/10 border-[#D4A017]/30 group-hover:shadow-[0_0_20px_rgba(212,160,23,0.35)]',
   };
 
+  const currentAccent = accentStyles[accentColor] || accentStyles.gold;
+
+  const sparklineColor =
+    accentColor === 'emerald' || accentColor === 'lime' ? '#22C55E' :
+    accentColor === 'coral' ? '#EF4444' :
+    accentColor === 'teal' || accentColor === 'mint' || accentColor === 'cyan' ? '#E8C766' : '#D4A017';
+
   return (
-    <div className="group relative p-5 rounded-2xl bg-gradient-to-b from-[#161D29]/90 to-[#0D1118]/90 backdrop-blur-xl border border-white/10 hover:border-yellow-400/60 hover:bg-white/10 hover:shadow-[0_10px_35px_rgba(255,215,0,0.3)] transition-all duration-300 transform hover:-translate-y-1 space-y-3">
+    <div className="group relative p-5 rounded-2xl bg-[#2B1720] backdrop-blur-xl border border-[#3A1F2B] hover:border-[#D4A017] hover:shadow-[0_10px_35px_rgba(212,160,23,0.3)] transition-all duration-200 transform hover:-translate-y-1 space-y-3 cursor-pointer">
       
       {/* Top Header */}
       <div className="flex items-center justify-between">
-        <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#9BA7B7] group-hover:text-yellow-300 transition-colors">
+        <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#C9B8BE] group-hover:text-[#FFF9F2] transition-colors">
           {title}
         </span>
-        <div className={`p-2 rounded-xl border transition-all ${accentStyles[accentColor]}`}>
+        <div className={`p-2 rounded-xl border transition-all ${currentAccent}`}>
           <Icon className="w-4 h-4" />
         </div>
       </div>
 
       {/* Large Value Number & Trend Indicator */}
       <div className="flex items-baseline justify-between pt-1">
-        <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-mono">
+        <div className="text-2xl sm:text-3xl font-extrabold text-[#FFF9F2] tracking-tight font-mono">
           {value}
         </div>
         {change && (
-          <div className={`flex items-center gap-1 text-xs font-mono font-bold ${isPositive ? 'text-[#54E38E]' : 'text-[#FF7A8A]'}`}>
+          <div className={`flex items-center gap-1 text-xs font-mono font-bold ${isPositive ? 'text-[#D4A017]' : 'text-[#EF4444]'}`}>
             {isPositive ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
             <span>{change}</span>
           </div>
@@ -54,15 +71,15 @@ export const StatCard: React.FC<StatCardProps> = ({
       </div>
 
       {/* Bottom Sparkline SVG & Subtitle */}
-      <div className="flex items-center justify-between pt-2 border-t border-white/5">
-        <span className="text-[11px] text-[#64748B] font-mono">{subtitle}</span>
+      <div className="flex items-center justify-between pt-2 border-t border-[#3A1F2B]">
+        <span className="text-[11px] text-[#C9B8BE] font-mono">{subtitle}</span>
         
         {/* Mini SVG Sparkline */}
-        <svg className="w-16 h-5 stroke-current opacity-80" viewBox="0 0 50 15">
+        <svg className="w-16 h-5 stroke-current opacity-90" viewBox="0 0 50 15">
           <path
             d="M0 12 L10 8 L20 13 L30 5 L40 9 L50 2"
             fill="none"
-            stroke={accentColor === 'lime' ? '#C7FF3D' : accentColor === 'cyan' ? '#38E8FF' : accentColor === 'violet' ? '#9B7CFF' : '#FF7A8A'}
+            stroke={sparklineColor}
             strokeWidth="2"
             strokeLinecap="round"
           />

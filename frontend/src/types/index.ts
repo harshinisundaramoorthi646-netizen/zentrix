@@ -1,4 +1,4 @@
-export type UserRole = 'ADMIN' | 'TEAM_A' | 'TEAM_B';
+export type UserRole = 'ADMIN' | 'TEAM_A' | 'TEAM_B' | 'TEAM_C';
 
 export interface User {
   id: string;
@@ -6,8 +6,10 @@ export interface User {
   password?: string;
   name: string;
   role: UserRole;
-  team: string;
+  team: 'TEAM_A' | 'TEAM_B' | 'TEAM_C' | 'MANAGEMENT' | string;
   avatar: string;
+  aadhaarNumber?: string;
+  contactNumber?: string;
   status: 'active' | 'inactive';
   performanceScore?: number;
   leadsSubmitted?: number;
@@ -17,9 +19,88 @@ export interface User {
   dealsClosed?: number;
   revenueGenerated?: number;
   earnedCommission?: number;
+  talkTimeSeconds?: number;
+  projectsAssigned?: number;
+  projectsCompleted?: number;
 }
 
-export type LeadStatus = 'Submitted' | 'Accepted' | 'Calling' | 'Follow-up' | 'Qualified' | 'Negotiation' | 'Converted' | 'Lost';
+export type RequirementCategory =
+  | 'Website Development'
+  | 'E-commerce'
+  | 'Advertisement / Ad Management'
+  | 'Testing'
+  | 'Other';
+
+export interface ClientRequirement {
+  id?: string;
+  clientName: string;
+  companyName: string;
+  category: RequirementCategory;
+  detailedRequirement: string;
+  budget?: number;
+  expectedDeliveryDate?: string;
+  additionalNotes?: string;
+  recordedBy?: string;
+  date?: string;
+}
+
+export interface PaymentConfirmation {
+  status: 'Pending' | 'Partially Paid' | 'Paid';
+  amount: number;
+  paymentDate: string;
+  transactionId: string;
+  notes?: string;
+  recordedBy?: string;
+}
+
+export type CallOutcome =
+  | 'Interested'
+  | 'Not Interested'
+  | 'Call Later'
+  | 'No Response'
+  | 'Waiting'
+  | 'Selected'
+  | 'Rejected';
+
+export interface CallRecord {
+  id: string;
+  startTime: string;
+  endTime?: string;
+  duration: string;
+  durationSeconds: number;
+  outcome: CallOutcome;
+  notes: string;
+  agent: string;
+  date: string;
+}
+
+export interface FollowUp {
+  id: string;
+  date: string;
+  time: string;
+  notes: string;
+  status: 'Pending' | 'Completed';
+  agent: string;
+  rescheduledDate?: string;
+}
+
+export type LeadStatus =
+  | 'New'
+  | 'Forwarded to Team B'
+  | 'Selected'
+  | 'Rejected'
+  | 'Waiting'
+  | 'Submitted'
+  | 'Accepted'
+  | 'Calling'
+  | 'Follow-up'
+  | 'Qualified'
+  | 'Negotiation'
+  | 'In Execution'
+  | 'Converted'
+  | 'Completed'
+  | 'Lost';
+
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
 
 export interface CallLog {
@@ -32,18 +113,19 @@ export interface CallLog {
 
 export interface JourneyStep {
   timestamp: string;
-  stage: LeadStatus;
+  stage: string;
   author: string;
   details: string;
 }
 
 export interface Lead {
-  id: string;
-  name: string;
+  id: string; // e.g. LD-1001
+  name: string; // Lead Name
+  company: string; // Company Name
   phone: string;
   email: string;
-  company: string;
-  location: string;
+  location: string; // Area e.g. Chennai, Bengaluru
+  area?: string;
   source: string;
   requirement: string;
   estimatedBudget: number;
@@ -52,11 +134,18 @@ export interface Lead {
   priority: Priority;
   assignedTeamA?: string;
   assignedTeamB?: string;
+  assignedTeamC?: string;
   createdDate: string;
+  forwardedToTeamB?: boolean;
+  forwardedDate?: string;
   convertedDealValue?: number;
   convertedDate?: string;
   followUpDate?: string;
   calls: CallLog[];
+  callRecords?: CallRecord[];
+  followUps?: FollowUp[];
+  requirements?: ClientRequirement;
+  payment?: PaymentConfirmation;
   journey: JourneyStep[];
 }
 
@@ -85,21 +174,36 @@ export interface Client {
   outstandingInvoices: number;
   status: 'Active' | 'Inactive';
   joinedDate: string;
+  requirements?: ClientRequirement;
+  payment?: PaymentConfirmation;
 }
 
+export type ProjectStatus = 'Not Started' | 'Active' | 'On Hold' | 'Pending' | 'Completed' | 'Planning' | 'Cancelled';
+
 export interface Project {
-  id: string;
+  id: string; // e.g. PRJ-3001
   name: string;
   client: string;
+  clientName?: string;
+  companyName?: string;
   description: string;
+  category?: RequirementCategory;
   budget: number;
   startDate: string;
   deadline: string;
-  status: 'Planning' | 'Active' | 'On Hold' | 'Completed' | 'Cancelled';
-  progress: number;
+  status: ProjectStatus;
+  progress: number; // 0-100%
+  milestones?: string;
+  milestone?: string;
   assignedTeam: string;
+  assignedMember?: string;
   members: string[];
   priority: Priority;
+  clientRequirements?: ClientRequirement;
+  paymentStatus?: 'Pending' | 'Partially Paid' | 'Paid';
+  payment?: PaymentConfirmation;
+  notesList?: { id: string; date: string; author: string; text: string }[];
+  history?: JourneyStep[];
 }
 
 export type TaskStatus = 'Todo' | 'In Progress' | 'Review' | 'Completed';
@@ -155,3 +259,4 @@ export interface NotificationItem {
   read: boolean;
   type: 'info' | 'success' | 'warning' | 'error';
 }
+

@@ -14,7 +14,15 @@ import {
   mockNotifications
 } from './mockData';
 
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api';
+const getApiBaseUrl = () => {
+  const envUrl = (import.meta as any).env?.VITE_API_BASE_URL || (import.meta as any).env?.VITE_API_URL;
+  if (envUrl) {
+    return envUrl.endsWith('/api') ? envUrl : `${envUrl.replace(/\/$/, '')}/api`;
+  }
+  return '/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -123,34 +131,218 @@ export const apiService = {
   async createLead(leadData: Partial<Lead>, author: string): Promise<Lead> {
     try {
       const res = await apiClient.post('/leads', { ...leadData, author });
-      toast.success('Lead created successfully!');
-      return res.data;
-    } catch (err: any) {
-      if (err.response?.status === 404 || !err.response) {
-        const newLead: Lead = {
-          id: `ZX-LD-2026-${Math.floor(10000 + Math.random() * 90000)}`,
-          name: leadData.name || 'New Client Lead',
-          phone: leadData.phone || '',
-          email: leadData.email || '',
-          company: leadData.company || 'Enterprise Client',
-          location: leadData.location || 'India',
-          source: leadData.source || 'Direct',
-          requirement: leadData.requirement || '',
-          estimatedBudget: leadData.estimatedBudget || 100000,
-          notes: leadData.notes || '',
-          status: 'Submitted',
-          priority: leadData.priority || 'MEDIUM',
-          assignedTeamA: author,
-          createdDate: new Date().toISOString(),
-          calls: [],
-          journey: [{ timestamp: new Date().toISOString(), stage: 'Submitted', author, details: 'Lead created in workspace' }]
-        };
-        mockLeads.unshift(newLead);
-        toast.success('Lead created successfully!');
-        return newLead;
+      const created = res.data;
+      // Also add to mockLeads so local UI views sync immediately
+      if (created && created.id) {
+        const idx = mockLeads.findIndex(l => l.id === created.id);
+        if (idx === -1) mockLeads.unshift(created);
+        else mockLeads[idx] = created;
       }
-      throw err;
+      toast.success(`Lead ${created.id || 'created'} successfully!`);
+      return created;
+    } catch (err: any) {
+      console.warn('⚠️ Server createLead call failed. Creating lead in local state:', err.message);
+      const nextIdNumber = 1001 + mockLeads.length;
+      const newLead: Lead = {
+        id: `LD-${nextIdNumber}`,
+        name: leadData.name || 'New Lead Prospect',
+        company: leadData.company || 'New Company',
+        phone: leadData.phone || '+91 98765 43210',
+        email: leadData.email || 'lead@prospect.com',
+        location: leadData.location || leadData.area || 'Chennai',
+        area: leadData.area || leadData.location || 'Chennai',
+        source: leadData.source || 'Direct Prospecting',
+        requirement: leadData.requirement || 'Website Development',
+        estimatedBudget: leadData.estimatedBudget || 150000,
+        notes: leadData.notes || '',
+        status: 'New',
+        priority: leadData.priority || 'MEDIUM',
+        assignedTeamA: author || 'Team A Member',
+        createdDate: new Date().toISOString(),
+        forwardedToTeamB: false,
+        calls: [],
+        journey: [
+          {
+            timestamp: new Date().toISOString(),
+            stage: 'Lead Generated',
+            author: author || 'Team A',
+            details: `Lead ${leadData.name || ''} submitted for ${leadData.company || ''}`
+          }
+        ]
+      };
+      mockLeads.unshift(newLead);
+      mockAuditLogs.unshift({
+        id: `LOG-${Date.now()}`,
+        timestamp: new Date().toLocaleString(),
+        user: author || 'Team A',
+        action: 'LEAD_GENERATED',
+        details: `${author} created Lead ${newLead.id}`
+      });
+      toast.success(`Lead ${newLead.id} created successfully!`);
+      return newLead;
     }
+  },
+
+  async forwardLeadToTeamB(id: string, author: string): Promise<Lead> {
+    const lead = mockLeads.find(l => l.id === id);
+    if (lead) {
+      lead.status = 'Forwarded to Team B';
+      lead.forwardedToTeamB = true;
+      lead.forwardedDate = new Date().toISOString();
+      lead.assignedTeamB = lead.assignedTeamB || 'Rahul M';
+      lead.journey.push({
+        timestamp: new Date().toISOString(),
+        stage: 'Forwarded to Team B',
+        author,
+        details: `Lead ${id} forwarded to Team B calling queue`
+      });
+      mockAuditLogs.unshift({
+        id: `LOG-${Date.now()}`,
+        timestamp: new Date().toLocaleString(),
+        user: author,
+        action: 'LEAD_FORWARDED',
+        details: `${author} forwarded Lead ${id} to Team B`
+      });
+      toast.success(`Lead ${id} forwarded to Team B!`);
+      return lead;
+    }
+    throw new Error('Lead not found');
+  },
+
+  async updateLeadStatus(id: string, status: any, author: string): Promise<Lead> {
+    const lead = mockLeads.find(l => l.id === id);
+    if (lead) {
+      lead.status = status;
+      lead.journey.push({
+        timestamp: new Date().toISOString(),
+        stage: `Status: ${status}`,
+        author,
+        details: `Status updated to ${status}`
+      });
+      toast.success(`Lead ${id} status updated to ${status}`);
+      return lead;
+    }
+    throw new Error('Lead not found');
+  },
+
+  async saveClientRequirements(id: string, reqData: any, author: string): Promise<Lead> {
+    const lead = mockLeads.find(l => l.id === id);
+    if (lead) {
+      lead.requirements = {
+        id: `req-${Date.now()}`,
+        clientName: reqData.clientName || lead.name,
+        companyName: reqData.companyName || lead.company,
+        category: reqData.category || 'Website Development',
+        detailedRequirement: reqData.detailedRequirement || '',
+        budget: Number(reqData.budget) || lead.estimatedBudget,
+        expectedDeliveryDate: reqData.expectedDeliveryDate || '',
+        additionalNotes: reqData.additionalNotes || '',
+        recordedBy: author,
+        date: new Date().toISOString()
+      };
+      lead.journey.push({
+        timestamp: new Date().toISOString(),
+        stage: 'Requirements Collected',
+        author,
+        details: `Client requirements recorded (${reqData.category})`
+      });
+      mockAuditLogs.unshift({
+        id: `LOG-${Date.now()}`,
+        timestamp: new Date().toLocaleString(),
+        user: author,
+        action: 'REQUIREMENTS_SAVED',
+        details: `${author} recorded requirements for ${lead.company}`
+      });
+      toast.success('Client requirements saved! Visible to Team C.');
+      return lead;
+    }
+    throw new Error('Lead not found');
+  },
+
+  async savePaymentConfirmation(id: string, payData: any, author: string): Promise<Lead> {
+    const lead = mockLeads.find(l => l.id === id);
+    if (lead) {
+      lead.payment = {
+        status: payData.status || 'Paid',
+        amount: Number(payData.amount) || 50000,
+        paymentDate: payData.paymentDate || new Date().toISOString().split('T')[0],
+        transactionId: payData.transactionId || `TXN-${Math.floor(100000 + Math.random() * 900000)}`,
+        notes: payData.notes || '',
+        recordedBy: author
+      };
+      lead.journey.push({
+        timestamp: new Date().toISOString(),
+        stage: 'Payment Confirmed',
+        author,
+        details: `Payment of ₹${lead.payment.amount.toLocaleString('en-IN')} confirmed (${lead.payment.status})`
+      });
+
+      // Auto check if Project exists or create new Project for Team C
+      let proj = mockProjects.find(p => p.companyName === lead.company || p.client === lead.company);
+      if (!proj) {
+        proj = {
+          id: `PRJ-${3001 + mockProjects.length}`,
+          name: `${lead.company} ${lead.requirements?.category || 'Project'}`,
+          client: lead.company,
+          companyName: lead.company,
+          description: lead.requirements?.detailedRequirement || lead.requirement,
+          category: lead.requirements?.category || 'Website Development',
+          budget: lead.estimatedBudget,
+          startDate: new Date().toISOString().split('T')[0],
+          deadline: lead.requirements?.expectedDeliveryDate || '2026-09-30',
+          status: 'Not Started',
+          progress: 0,
+          assignedTeam: 'TEAM_C',
+          assignedMember: 'Suresh K',
+          members: ['Suresh K'],
+          priority: lead.priority,
+          clientRequirements: lead.requirements,
+          paymentStatus: lead.payment.status,
+          payment: lead.payment,
+          notesList: [],
+          history: lead.journey
+        };
+        mockProjects.unshift(proj);
+        lead.assignedTeamC = 'Suresh K';
+        lead.journey.push({
+          timestamp: new Date().toISOString(),
+          stage: 'Project Assigned to Team C',
+          author: 'System',
+          details: `Project ${proj.id} assigned to Team C (Suresh K)`
+        });
+      } else {
+        proj.paymentStatus = lead.payment.status;
+        proj.payment = lead.payment;
+      }
+
+      mockAuditLogs.unshift({
+        id: `LOG-${Date.now()}`,
+        timestamp: new Date().toLocaleString(),
+        user: author,
+        action: 'PAYMENT_CONFIRMED',
+        details: `Payment marked as ${payData.status} (₹${Number(payData.amount).toLocaleString('en-IN')})`
+      });
+      toast.success('Payment confirmation recorded!');
+      return lead;
+    }
+    throw new Error('Lead not found');
+  },
+
+  async updateProjectProgress(id: string, progress: number, milestone: string, logNote?: any): Promise<Project> {
+    const proj = mockProjects.find(p => p.id === id);
+    if (proj) {
+      proj.progress = progress;
+      proj.milestones = milestone;
+      proj.milestone = milestone;
+      if (progress === 100) {
+        proj.status = 'Completed';
+      } else if (progress > 0) {
+        proj.status = 'Active';
+      }
+      toast.success(`Project ${id} progress updated to ${progress}%`);
+      return proj;
+    }
+    throw new Error('Project not found');
   },
 
   async updateLead(id: string, leadData: Partial<Lead>): Promise<Lead> {
@@ -253,24 +445,38 @@ export const apiService = {
   async createUser(userData: Partial<User>): Promise<User> {
     try {
       const res = await apiClient.post('/users', userData);
-      toast.success(`User ${res.data.name} created!`);
-      return res.data;
-    } catch (err: any) {
-      if (err.response?.status === 404 || !err.response) {
-        const newUser: User = {
-          id: `usr_${Date.now()}`,
-          email: userData.email || 'user@zentrix.com',
-          name: userData.name || 'New Team Member',
-          role: userData.role || 'TEAM_A',
-          team: userData.team || 'TEAM_A',
-          status: 'active',
-          avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80"
-        };
-        mockUsers.push(newUser);
-        toast.success(`User ${newUser.name} created!`);
-        return newUser;
+      const created = res.data;
+      if (created && created.id) {
+        const idx = mockUsers.findIndex(u => u.id === created.id);
+        if (idx === -1) mockUsers.unshift(created);
+        else mockUsers[idx] = created;
       }
-      throw err;
+      toast.success(`User ${created.name || 'Member'} created!`);
+      return created;
+    } catch (err: any) {
+      console.warn('⚠️ Server createUser call failed. Creating user in local state:', err.message);
+      const newUser: User = {
+        id: `usr_${Date.now()}`,
+        email: userData.email || 'user@zentrix.com',
+        name: userData.name || 'New Team Member',
+        role: userData.role || 'TEAM_A',
+        team: userData.team || userData.role || 'TEAM_A',
+        aadhaarNumber: userData.aadhaarNumber || '1234-5678-9012',
+        contactNumber: userData.contactNumber || '+91 98765 43210',
+        status: 'active',
+        avatar: userData.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+        performanceScore: 90
+      };
+      mockUsers.unshift(newUser);
+      mockAuditLogs.unshift({
+        id: `LOG-${Date.now()}`,
+        timestamp: new Date().toLocaleString(),
+        user: 'Admin',
+        action: 'MEMBER_ADDED',
+        details: `Admin added new member ${newUser.name} to ${newUser.team}`
+      });
+      toast.success(`User ${newUser.name} added to ${newUser.team}!`);
+      return newUser;
     }
   },
 

@@ -333,9 +333,33 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
   res.json(safeUser);
 });
 
-// ----------------------------------------------------
-// LEADS & LEAD JOURNEY PIPELINE
-// ----------------------------------------------------
+// Helper to dynamically generate a unique non-colliding Lead ID
+const generateLeadId = async () => {
+  let maxId = 128;
+  if (Array.isArray(db.leads)) {
+    for (const l of db.leads) {
+      if (l && l.id && typeof l.id === 'string' && l.id.startsWith('ZX-LD-2026-')) {
+        const num = parseInt(l.id.replace('ZX-LD-2026-', ''), 10);
+        if (!isNaN(num) && num > maxId) maxId = num;
+      }
+    }
+  }
+  if (isMongoConnected) {
+    try {
+      const mongoLeads = await Lead.find({}, { id: 1 }).lean();
+      for (const l of mongoLeads) {
+        if (l && l.id && typeof l.id === 'string' && l.id.startsWith('ZX-LD-2026-')) {
+          const num = parseInt(l.id.replace('ZX-LD-2026-', ''), 10);
+          if (!isNaN(num) && num > maxId) maxId = num;
+        }
+      }
+    } catch (e) {
+      console.warn('Warning fetching max lead id from mongo:', e.message);
+    }
+  }
+  const nextNum = maxId + 1;
+  return `ZX-LD-2026-${String(nextNum).padStart(5, '0')}`;
+};
 
 /**
  * @openapi
@@ -350,8 +374,15 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
  *       200:
  *         description: Array of all lead objects.
  */
-app.get('/api/leads', authenticateToken, (req, res) => {
-  res.json(db.leads);
+app.get('/api/leads', authenticateToken, async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      db.leads = await Lead.find().sort({ createdAt: -1 }).lean();
+    }
+    res.json(db.leads);
+  } catch (err) {
+    res.json(db.leads);
+  }
 });
 
 /**
@@ -400,11 +431,11 @@ app.get('/api/leads/:id', authenticateToken, (req, res) => {
  *             properties:
  *               name:
  *                 type: string
+ *               company:
+ *                 type: string
  *               phone:
  *                 type: string
  *               email:
- *                 type: string
- *               company:
  *                 type: string
  *               location:
  *                 type: string
@@ -416,64 +447,71 @@ app.get('/api/leads/:id', authenticateToken, (req, res) => {
  *                 type: number
  *               notes:
  *                 type: string
- *               author:
- *                 type: string
  *     responses:
  *       201:
  *         description: Lead created successfully.
  */
-app.post('/api/leads', authenticateToken, requireRole('ADMIN', 'TEAM_A'), (req, res) => {
-  const { name, phone, email, company, location, source, requirement, estimatedBudget, notes, author } = req.body;
-  
-  const leadCount = db.leads.length + 129;
-  const newId = `ZX-LD-2026-${String(leadCount).padStart(5, '0')}`;
-  const creatorName = author || req.user.name || 'Team A';
-  
-  const newLead = {
-    id: newId,
-    name: name || 'New Lead Prospect',
-    phone: phone || '',
-    email: email || '',
-    company: company || 'Independent Company',
-    location: location || 'India',
-    source: source || 'Direct Outreach',
-    requirement: requirement || 'Full-stack Custom SaaS Development',
-    estimatedBudget: Number(estimatedBudget) || 100000,
-    notes: notes || '',
-    status: 'Submitted',
-    priority: Number(estimatedBudget) > 200000 ? 'HIGH' : 'MEDIUM',
-    assignedTeamA: creatorName,
-    assignedTeamB: 'Rahul M',
-    createdDate: new Date().toISOString(),
-    calls: [],
-    journey: [
-      {
-        timestamp: new Date().toISOString(),
-        stage: 'Submitted',
-        author: creatorName,
-        details: `Lead submitted with estimated budget ₹${Number(estimatedBudget || 100000).toLocaleString('en-IN')}`
-      }
-    ]
-  };
+app.post('/api/leads', authenticateToken, async (req, res) => {
+  try {
+    const { name, phone, email, company, location, source, requirement, estimatedBudget, notes, author } = req.body;
+    
+    const newId = await generateLeadId();
+    const creatorName = author || req.user?.name || 'Team A';
+    
+    const newLead = {
+      id: newId,
+      name: name || 'New Lead Prospect',
+      phone: phone || '',
+      email: email || '',
+      company: company || 'Independent Company',
+      location: location || 'India',
+      source: source || 'Direct Outreach',
+      requirement: requirement || 'Full-stack Custom SaaS Development',
+      estimatedBudget: Number(estimatedBudget) || 100000,
+      notes: notes || '',
+      status: 'Submitted',
+      priority: Number(estimatedBudget) > 200000 ? 'HIGH' : 'MEDIUM',
+      assignedTeamA: creatorName,
+      assignedTeamB: 'Rahul M',
+      createdDate: new Date().toISOString(),
+      calls: [],
+      journey: [
+        {
+          timestamp: new Date().toISOString(),
+          stage: 'Submitted',
+          author: creatorName,
+          details: `Lead submitted with estimated budget ₹${Number(estimatedBudget || 100000).toLocaleString('en-IN')}`
+        }
+      ]
+    };
 
-  db.leads.unshift(newLead);
-  if (isMongoConnected) {
-    Lead.create(newLead).catch(err => console.error('Error saving Lead:', err.message));
-  }
-  
-  const member = db.users.find(u => u.name === creatorName || u.role === 'TEAM_A');
-  if (member) {
-    member.earnedCommission = (member.earnedCommission || 0) + (db.commissionRules?.teamA?.amount || 100);
-    member.leadsSubmitted = (member.leadsSubmitted || 0) + 1;
     if (isMongoConnected) {
-      User.updateOne({ id: member.id }, { earnedCommission: member.earnedCommission, leadsSubmitted: member.leadsSubmitted }).catch(err => console.error('Error updating member:', err.message));
+      const savedLead = await Lead.create(newLead);
+      const plainLead = savedLead.toObject();
+      db.leads = db.leads.filter(l => l.id !== newId);
+      db.leads.unshift(plainLead);
+    } else {
+      db.leads = db.leads.filter(l => l.id !== newId);
+      db.leads.unshift(newLead);
     }
+    
+    const member = db.users.find(u => u.name === creatorName || u.role === 'TEAM_A');
+    if (member) {
+      member.earnedCommission = (member.earnedCommission || 0) + (db.commissionRules?.teamA?.amount || 100);
+      member.leadsSubmitted = (member.leadsSubmitted || 0) + 1;
+      if (isMongoConnected) {
+        await User.updateOne({ id: member.id }, { earnedCommission: member.earnedCommission, leadsSubmitted: member.leadsSubmitted }).catch(err => console.error('Error updating member:', err.message));
+      }
+    }
+
+    logAuditEvent(creatorName, 'SUBMITTED_LEAD', `Created Lead ${newId} (${company})`);
+    addNotification('New Lead Created', `Lead ${newId} submitted by ${creatorName}.`, 'info');
+
+    return res.status(201).json(newLead);
+  } catch (err) {
+    console.error('❌ Error creating Lead in MongoDB:', err);
+    return res.status(500).json({ error: 'Failed to save lead to database', details: err.message });
   }
-
-  logAuditEvent(creatorName, 'SUBMITTED_LEAD', `Created Lead ${newId} (${company})`);
-  addNotification('New Lead Created', `Lead ${newId} submitted by ${creatorName}.`, 'info');
-
-  res.status(201).json(newLead);
 });
 
 /**
@@ -693,6 +731,181 @@ app.post('/api/leads/:id/convert', authenticateToken, requireRole('ADMIN'), (req
   res.json({ lead, project: newProject, invoice: newInvoice, commission: commissionAmt });
 });
 
+/**
+ * @openapi
+ * /api/leads/{id}/requirements:
+ *   post:
+ *     summary: Save client technical requirements scoping (Team B)
+ *     tags:
+ *       - Leads
+ *     security:
+ *       - bearerAuth: []
+ */
+app.post('/api/leads/:id/requirements', authenticateToken, requireRole('ADMIN', 'TEAM_B'), (req, res) => {
+  const { id } = req.params;
+  const lead = db.leads.find(l => l.id === id);
+  if (!lead) return res.status(404).json({ error: "Lead not found" });
+
+  const agentName = req.body.agent || req.user.name || 'Team B';
+  lead.clientRequirements = {
+    clientName: req.body.clientName || lead.name,
+    companyName: req.body.companyName || lead.company,
+    category: req.body.category || 'Website Development',
+    detailedRequirement: req.body.detailedRequirement || '',
+    budget: Number(req.body.budget) || lead.estimatedBudget || 0,
+    expectedDeliveryDate: req.body.expectedDeliveryDate || '',
+    additionalNotes: req.body.additionalNotes || '',
+    savedAt: new Date().toISOString(),
+    savedBy: agentName
+  };
+
+  lead.journey.push({
+    timestamp: new Date().toISOString(),
+    stage: 'Requirements Locked',
+    author: agentName,
+    details: `Client requirements scope locked under category: ${lead.clientRequirements.category}`
+  });
+
+  if (isMongoConnected) {
+    Lead.updateOne({ id }, { clientRequirements: lead.clientRequirements, journey: lead.journey }).catch(err => console.error('Error saving requirements:', err.message));
+  }
+
+  logAuditEvent(agentName, 'SCOPED_REQUIREMENTS', `Saved client requirements for Lead ${id}`);
+  res.json(lead);
+});
+
+/**
+ * @openapi
+ * /api/leads/{id}/payments:
+ *   post:
+ *     summary: Record advance deposit payment (Team B)
+ *     tags:
+ *       - Leads
+ *     security:
+ *       - bearerAuth: []
+ */
+app.post('/api/leads/:id/payments', authenticateToken, requireRole('ADMIN', 'TEAM_B'), (req, res) => {
+  const { id } = req.params;
+  const lead = db.leads.find(l => l.id === id);
+  if (!lead) return res.status(404).json({ error: "Lead not found" });
+
+  const agentName = req.body.agent || req.user.name || 'Team B';
+  lead.paymentDetails = {
+    amount: Number(req.body.amount) || 0,
+    paymentMethod: req.body.paymentMethod || 'UPI',
+    transactionId: req.body.transactionId || `TXN-${Date.now()}`,
+    paymentDate: req.body.paymentDate || new Date().toISOString().split('T')[0],
+    notes: req.body.notes || 'Advance deposit payment received',
+    recordedAt: new Date().toISOString(),
+    recordedBy: agentName
+  };
+
+  lead.journey.push({
+    timestamp: new Date().toISOString(),
+    stage: 'Payment Recorded',
+    author: agentName,
+    details: `Deposit payment of ₹${lead.paymentDetails.amount.toLocaleString('en-IN')} recorded via ${lead.paymentDetails.paymentMethod}`
+  });
+
+  if (isMongoConnected) {
+    Lead.updateOne({ id }, { paymentDetails: lead.paymentDetails, journey: lead.journey }).catch(err => console.error('Error saving payment:', err.message));
+  }
+
+  logAuditEvent(agentName, 'RECORDED_PAYMENT', `Recorded payment of ₹${lead.paymentDetails.amount} for Lead ${id}`);
+  res.json(lead);
+});
+
+/**
+ * @openapi
+ * /api/leads/{id}/status:
+ *   put:
+ *     summary: Update lead status (Selected, Rejected, Waiting)
+ *     tags:
+ *       - Leads
+ *     security:
+ *       - bearerAuth: []
+ */
+app.put('/api/leads/:id/status', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { status, agent } = req.body;
+  const lead = db.leads.find(l => l.id === id);
+  if (!lead) return res.status(404).json({ error: "Lead not found" });
+
+  const agentName = agent || req.user.name || 'System';
+  lead.status = status || lead.status;
+  lead.journey.push({
+    timestamp: new Date().toISOString(),
+    stage: lead.status,
+    author: agentName,
+    details: `Lead status updated to ${lead.status}`
+  });
+
+  if (isMongoConnected) {
+    Lead.updateOne({ id }, { status: lead.status, journey: lead.journey }).catch(err => console.error('Error updating status:', err.message));
+  }
+
+  res.json(lead);
+});
+
+/**
+ * @openapi
+ * /api/projects/{id}/progress:
+ *   put:
+ *     summary: Update project progress slider % and status (Team C / Execution)
+ *     tags:
+ *       - Projects
+ *     security:
+ *       - bearerAuth: []
+ */
+app.put('/api/projects/:id/progress', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { progress, status, agent } = req.body;
+  const project = db.projects.find(p => p.id === id);
+  if (!project) return res.status(404).json({ error: "Project not found" });
+
+  if (typeof progress === 'number') project.progress = progress;
+  if (status) project.status = status;
+
+  if (isMongoConnected) {
+    Project.updateOne({ id }, { progress: project.progress, status: project.status }).catch(err => console.error('Error updating project progress:', err.message));
+  }
+
+  logAuditEvent(agent || req.user.name || 'Team C', 'UPDATED_PROJECT_PROGRESS', `Updated progress for project ${id} to ${project.progress}%`);
+  res.json(project);
+});
+
+/**
+ * @openapi
+ * /api/projects/{id}/notes:
+ *   post:
+ *     summary: Add technical execution note to project (Team C)
+ *     tags:
+ *       - Projects
+ *     security:
+ *       - bearerAuth: []
+ */
+app.post('/api/projects/:id/notes', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { text, author } = req.body;
+  const project = db.projects.find(p => p.id === id);
+  if (!project) return res.status(404).json({ error: "Project not found" });
+
+  project.notesList = project.notesList || [];
+  const newNote = {
+    id: `note_${Date.now()}`,
+    date: new Date().toISOString().split('T')[0],
+    author: author || req.user.name || 'Developer',
+    text: (text || '').trim()
+  };
+  project.notesList.push(newNote);
+
+  if (isMongoConnected) {
+    Project.updateOne({ id }, { notesList: project.notesList }).catch(err => console.error('Error adding project note:', err.message));
+  }
+
+  res.status(201).json(newNote);
+});
+
 // ----------------------------------------------------
 // TEAMS, COMMISSIONS, FINANCIALS, TASKS, TIME TRACKING
 // ----------------------------------------------------
@@ -745,7 +958,7 @@ app.get('/api/users', authenticateToken, requireRole('ADMIN'), (req, res) => {
  *       201:
  *         description: User created successfully.
  */
-app.post('/api/users', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+app.post('/api/users', authenticateToken, async (req, res) => {
   const rawPass = req.body.password || 'Password123';
   const hashedPassword = await bcrypt.hash(rawPass, 10);
 
@@ -867,17 +1080,22 @@ app.delete('/api/users/:id', authenticateToken, requireRole('ADMIN'), (req, res)
  *       200:
  *         description: Updated lead details.
  */
-app.put('/api/leads/:id', authenticateToken, requireRole('ADMIN', 'TEAM_A'), (req, res) => {
-  const { id } = req.params;
-  const index = db.leads.findIndex(l => l.id === id);
-  if (index === -1) return res.status(404).json({ error: "Lead not found" });
+app.put('/api/leads/:id', authenticateToken, requireRole('ADMIN', 'TEAM_A'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const index = db.leads.findIndex(l => l.id === id);
+    if (index === -1) return res.status(404).json({ error: "Lead not found" });
 
-  db.leads[index] = { ...db.leads[index], ...req.body };
-  if (isMongoConnected) {
-    Lead.updateOne({ id }, db.leads[index]).catch(err => console.error('Error updating Lead:', err.message));
+    db.leads[index] = { ...db.leads[index], ...req.body };
+    if (isMongoConnected) {
+      await Lead.updateOne({ id }, db.leads[index]);
+    }
+    logAuditEvent(req.user?.name || 'Admin', 'UPDATED_LEAD', `Updated lead ${id}`);
+    res.json(db.leads[index]);
+  } catch (err) {
+    console.error('Error updating Lead:', err.message);
+    res.status(500).json({ error: 'Failed to update lead', details: err.message });
   }
-  logAuditEvent(req.user.name || 'Admin', 'UPDATED_LEAD', `Updated lead ${id}`);
-  res.json(db.leads[index]);
 });
 
 /**
@@ -899,17 +1117,22 @@ app.put('/api/leads/:id', authenticateToken, requireRole('ADMIN', 'TEAM_A'), (re
  *       200:
  *         description: Lead deleted successfully.
  */
-app.delete('/api/leads/:id', authenticateToken, requireRole('ADMIN'), (req, res) => {
-  const { id } = req.params;
-  const index = db.leads.findIndex(l => l.id === id);
-  if (index === -1) return res.status(404).json({ error: "Lead not found" });
+app.delete('/api/leads/:id', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const index = db.leads.findIndex(l => l.id === id);
+    if (index === -1) return res.status(404).json({ error: "Lead not found" });
 
-  const deletedLead = db.leads.splice(index, 1)[0];
-  if (isMongoConnected) {
-    Lead.deleteOne({ id }).catch(err => console.error('Error deleting Lead:', err.message));
+    const deletedLead = db.leads.splice(index, 1)[0];
+    if (isMongoConnected) {
+      await Lead.deleteOne({ id });
+    }
+    logAuditEvent(req.user?.name || 'Admin', 'DELETED_LEAD', `Deleted lead ${id}`);
+    res.json({ message: "Lead deleted successfully", lead: deletedLead });
+  } catch (err) {
+    console.error('Error deleting Lead:', err.message);
+    res.status(500).json({ error: 'Failed to delete lead', details: err.message });
   }
-  logAuditEvent(req.user.name || 'Admin', 'DELETED_LEAD', `Deleted lead ${id}`);
-  res.json({ message: "Lead deleted successfully", lead: deletedLead });
 });
 
 /**

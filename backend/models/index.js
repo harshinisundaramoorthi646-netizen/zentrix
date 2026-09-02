@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   name: { type: String, required: true },
-  role: { type: String, enum: ['ADMIN', 'TEAM_A', 'TEAM_B'], default: 'TEAM_A' },
+  role: { type: String, enum: ['ADMIN', 'TEAM_A', 'TEAM_B', 'TEAM_C'], default: 'TEAM_A' },
   team: { type: String, default: 'TEAM_A' },
   avatar: { type: String },
   status: { type: String, default: 'active' },
@@ -15,7 +15,9 @@ const userSchema = new mongoose.Schema({
   conversions: { type: Number, default: 0 },
   callsCompleted: { type: Number, default: 0 },
   qualifiedLeads: { type: Number, default: 0 },
-  earnedCommission: { type: Number, default: 0 }
+  projectsAssigned: { type: Number, default: 0 },
+  earnedCommission: { type: Number, default: 0 },
+  aadhaarNumber: { type: String }
 }, { timestamps: true });
 
 // Lead Schema & Model (Includes Lead Follow-ups & Journey)

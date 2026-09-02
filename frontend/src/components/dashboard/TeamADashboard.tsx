@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../services/authContext';
 import { apiService } from '../../services/api';
 import { Lead } from '../../types';
-import { Plus, GitMerge, Award, AlertTriangle, CheckCircle2, Search, Building2, Phone, Mail } from 'lucide-react';
+import { Plus, Award, Search, Building2, Send, UserPlus } from 'lucide-react';
 
 export const TeamADashboard: React.FC = () => {
   const { user, showToast } = useAuth();
@@ -10,55 +10,44 @@ export const TeamADashboard: React.FC = () => {
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [search, setSearch] = useState('');
 
-  // Form Fields
-  const [name, setName] = useState('');
-  const [company, setCompany] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [location, setLocation] = useState('Bengaluru, KA');
-  const [source, setSource] = useState('LinkedIn Direct');
-  const [requirement, setRequirement] = useState('');
-  const [budget, setBudget] = useState('150000');
-  const [notes, setNotes] = useState('');
-  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+  // Add Lead Form Fields
+  const [leadName, setLeadName] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [contactOrEmail, setContactOrEmail] = useState('');
+  const [area, setArea] = useState('Chennai');
+  const [requirementText, setRequirementText] = useState('Website Development');
 
   useEffect(() => {
     loadLeads();
   }, []);
 
   const loadLeads = () => {
-    apiService.getLeads().then(setLeads).catch(console.error);
+    apiService.getLeads()
+      .then(data => {
+        setLeads(data || []);
+      })
+      .catch(console.error);
   };
 
-  const handleCompanyChange = (val: string) => {
-    setCompany(val);
-    const existing = leads.find(l => l.company.toLowerCase() === val.trim().toLowerCase());
-    if (existing) {
-      setDuplicateWarning(`Potential duplicate detected! Lead ${existing.id} already exists for "${existing.company}".`);
-    } else {
-      setDuplicateWarning(null);
-    }
-  };
-
-  const handleSubmitLead = async (e: React.FormEvent) => {
+  const handleAddLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const created = await apiService.createLead(
+      const isPhone = /^[0-9+\s-]{8,}$/.test(contactOrEmail.trim());
+      await apiService.createLead(
         {
-          name,
-          company,
-          phone,
-          email,
-          location,
-          source,
-          requirement,
-          estimatedBudget: Number(budget),
-          notes
+          name: leadName,
+          company: companyName,
+          phone: isPhone ? contactOrEmail : '+91 98765 43210',
+          email: !isPhone ? contactOrEmail : `${leadName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+          location: area,
+          area: area,
+          requirement: requirementText || 'Website Development',
+          estimatedBudget: 150000,
+          source: 'Direct Prospecting'
         },
-        user?.name || 'Arun Kumar'
+        user?.name || 'Priya'
       );
 
-      showToast(`Lead ${created.id} submitted successfully! ₹100 commission credit added.`, 'success');
       setShowSubmitModal(false);
       resetForm();
       loadLeads();
@@ -68,228 +57,226 @@ export const TeamADashboard: React.FC = () => {
   };
 
   const resetForm = () => {
-    setName('');
-    setCompany('');
-    setPhone('');
-    setEmail('');
-    setRequirement('');
-    setBudget('150000');
-    setNotes('');
-    setDuplicateWarning(null);
+    setLeadName('');
+    setCompanyName('');
+    setContactOrEmail('');
+    setArea('Chennai');
+    setRequirementText('Website Development');
   };
 
-  const myLeads = leads.filter(l => l.assignedTeamA === user?.name || true);
-  const earnedCommission = myLeads.length * 100;
+  // Individual Team A Member Performance Stats
+  const teamAPerformance = [
+    { member: 'Arun', leadsGenerated: 35 },
+    { member: 'Priya', leadsGenerated: 28 },
+    { member: 'Karthik', leadsGenerated: 42 },
+  ];
+  const totalTeamALeadCount = teamAPerformance.reduce((acc, curr) => acc + curr.leadsGenerated, 0) + leads.length;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       
-      {/* Top Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-[#0D1118] via-[#111722] to-[#161D29] border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#38E8FF]/10 border border-[#38E8FF]/30 text-[#38E8FF] text-xs font-mono font-semibold">
-            TEAM A — LEAD GENERATION
+      {/* Team A Header Banner */}
+      <div className="p-6 rounded-2xl bg-[#2B1720] border border-[#3A1F2B] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4A017]/10 border border-[#D4A017]/30 text-[#D4A017] text-xs font-mono font-bold uppercase">
+            🚀 TEAM A WORKBENCH
           </div>
-          <h1 className="text-2xl font-extrabold text-white mt-1">Lead Prospecting Portal</h1>
-          <p className="text-xs text-[#9BA7B7] font-mono mt-0.5">
-            Submit new client leads, verify non-duplicate status, and track your ₹100/lead commission balance.
+          <h1 className="text-2xl font-extrabold text-[#FFF9F2]">Prospect Pipeline & Lead Submissions</h1>
+          <p className="text-xs text-[#C9B8BE] font-mono">
+            Submit new client leads and track qualification metrics per verified prospect.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="px-4 py-2 rounded-xl bg-[#080A0F] border border-white/10 text-right">
-            <div className="text-[10px] font-mono text-[#9BA7B7]">EARNED COMMISSION</div>
-            <div className="text-lg font-extrabold font-mono text-[#C7FF3D]">
-              ₹{earnedCommission.toLocaleString('en-IN')}
-            </div>
-          </div>
+        <button
+          onClick={() => setShowSubmitModal(true)}
+          className="px-5 py-3 rounded-xl bg-[#D4A017] text-[#1F1117] font-extrabold text-xs font-mono tracking-wider uppercase hover:bg-[#B8860B] transition-all shadow-[0_0_20px_rgba(212,160,23,0.35)] flex items-center gap-2 cursor-pointer"
+        >
+          <UserPlus className="w-4 h-4" />
+          <span>+ ADD NEW LEAD PROSPECT</span>
+        </button>
+      </div>
 
-          <button
-            onClick={() => setShowSubmitModal(true)}
-            className="px-5 py-3 rounded-xl bg-[#C7FF3D] text-black font-bold text-sm hover:bg-[#b5f027] transition-all shadow-[0_0_20px_rgba(199,255,61,0.3)] flex items-center gap-2 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>SUBMIT NEW LEAD</span>
-          </button>
+      {/* TEAM A PERFORMANCE & PROSPECTOR LEADERBOARD */}
+      <div className="p-6 rounded-2xl bg-[#2B1720] backdrop-blur-xl border border-[#3A1F2B] space-y-4 hover:border-[#D4A017]/40 transition-all">
+        <div className="flex items-center justify-between border-b border-[#3A1F2B] pb-3">
+          <h2 className="text-base font-bold text-[#FFF9F2] flex items-center gap-2 font-mono">
+            <Award className="w-4 h-4 text-[#D4A017]" />
+            <span>TEAM A PROSPECTOR PERFORMANCE</span>
+          </h2>
+          <span className="text-xs font-mono text-[#D4A017] font-bold">
+            Total Leads Generated: {totalTeamALeadCount}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs">
+          {teamAPerformance.map((p, i) => (
+            <div key={i} className="p-4 rounded-xl bg-[#1F1117] border border-[#3A1F2B] flex items-center justify-between hover:border-[#D4A017]/30 transition-all">
+              <div>
+                <div className="text-[#C9B8BE]">{p.member} (Team A)</div>
+                <div className="text-lg font-bold text-[#FFF9F2] mt-0.5">{p.leadsGenerated} Leads</div>
+              </div>
+              <div className="px-2.5 py-1 rounded-full bg-[#D4A017]/10 text-[#D4A017] font-bold border border-[#D4A017]/30 text-[10px]">
+                ₹{(p.leadsGenerated * 100).toLocaleString('en-IN')} Earned
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Leads List Directory */}
-      <div className="p-6 rounded-2xl bg-[#0D1118]/80 backdrop-blur-xl border border-white/10 space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <GitMerge className="w-4 h-4 text-[#38E8FF]" />
-            <span>My Submitted Leads ({myLeads.length})</span>
-          </h2>
+      {/* PROSPECT LEADS SUBMITTED TABLE */}
+      <div className="p-6 rounded-2xl bg-[#2B1720] backdrop-blur-xl border border-[#3A1F2B] space-y-4 shadow-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#3A1F2B] pb-4">
+          <div>
+            <h2 className="text-base font-bold text-[#FFF9F2] font-mono">My Lead Submissions Roster</h2>
+            <p className="text-xs text-[#C9B8BE] font-mono">List of client prospects submitted by Team A</p>
+          </div>
 
           <div className="relative w-full sm:w-64">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B]" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#C9B8BE]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search lead or company..."
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-[#111722] border border-white/10 text-xs text-white placeholder-[#64748B] focus:border-[#38E8FF] outline-none"
+              placeholder="Search by Lead ID, name, area..."
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-[#1F1117] border border-[#3A1F2B] text-xs text-[#FFF9F2] placeholder-[#C9B8BE] focus:border-[#D4A017] outline-none font-mono transition-all"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {myLeads
-            .filter(l => (l?.company || '').toLowerCase().includes((search || '').toLowerCase()) || (l?.id || '').toLowerCase().includes((search || '').toLowerCase()))
-            .map(l => (
-
-              <div key={l.id} className="p-4 rounded-2xl bg-[#111722]/90 backdrop-blur-md border border-white/10 hover:border-yellow-400/60 hover:bg-white/10 hover:backdrop-blur-xl hover:shadow-[0_8px_30px_rgba(255,215,0,0.25)] transition-all duration-300 transform hover:-translate-y-1 space-y-3 group">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold text-[#38E8FF] group-hover:text-yellow-300 transition-colors">{l.id}</span>
-                  <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full border ${
-                    l.status === 'Converted' ? 'bg-[#54E38E]/20 text-[#54E38E] border-[#54E38E]/40' : 'bg-white/5 text-[#9BA7B7] border-white/10'
-                  }`}>
-                    {l.status}
-                  </span>
-                </div>
-
-                <div>
-                  <div className="text-sm font-bold text-white">{l.company}</div>
-                  <div className="text-xs text-[#9BA7B7]">{l.name} • {l.location}</div>
-                </div>
-
-                <div className="p-2.5 rounded-lg bg-[#0D1118] text-xs text-[#9BA7B7] line-clamp-2">
-                  {l.requirement}
-                </div>
-
-                <div className="flex items-center justify-between text-xs font-mono pt-1 border-t border-white/5">
-                  <span className="text-[#64748B]">Est. Budget:</span>
-                  <span className="text-[#C7FF3D] font-bold">₹{l.estimatedBudget.toLocaleString('en-IN')}</span>
-                </div>
-              </div>
-            ))}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs font-mono">
+            <thead>
+              <tr className="border-b border-[#3A1F2B] text-[#C9B8BE] uppercase tracking-wider bg-[#1F1117]">
+                <th className="p-3">Lead ID</th>
+                <th className="p-3">Lead Name</th>
+                <th className="p-3">Company Name</th>
+                <th className="p-3">Contact / Email</th>
+                <th className="p-3">Area / Location</th>
+                <th className="p-3">Generated By</th>
+                <th className="p-3">Date</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#3A1F2B] text-[#FFF9F2]">
+              {leads
+                .filter(l =>
+                  (l.id || '').toLowerCase().includes(search.toLowerCase()) ||
+                  (l.name || '').toLowerCase().includes(search.toLowerCase()) ||
+                  (l.company || '').toLowerCase().includes(search.toLowerCase()) ||
+                  (l.location || '').toLowerCase().includes(search.toLowerCase()) ||
+                  (l.area || '').toLowerCase().includes(search.toLowerCase())
+                )
+                .map(l => (
+                  <tr key={l.id} className="hover-row hover:bg-[#5A1833]/40 transition-colors">
+                    <td className="p-3 font-bold text-[#D4A017] font-mono">{l.id}</td>
+                    <td className="p-3 font-bold text-[#FFF9F2]">{l.name}</td>
+                    <td className="p-3 text-[#C9B8BE]">{l.company}</td>
+                    <td className="p-3 text-[#C9B8BE] font-mono">{l.phone || l.email}</td>
+                    <td className="p-3 text-[#FFF9F2]">{l.location || l.area || 'Chennai'}</td>
+                    <td className="p-3 text-[#D4A017] font-bold font-mono">{l.assignedTeamA || 'Priya'}</td>
+                    <td className="p-3 text-[#C9B8BE] font-mono">
+                      {new Date(l.createdDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Submit Lead Modal */}
+      {/* ADD LEAD MODAL FORM */}
       {showSubmitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="w-full max-w-xl rounded-2xl bg-[#111722] border border-white/20 p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Plus className="w-5 h-5 text-[#C7FF3D]" />
-                <span>Submit New Freelance Lead</span>
+          <div className="w-full max-w-lg rounded-2xl bg-[#2B1720] border border-[#3A1F2B] p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-[#3A1F2B] pb-3">
+              <h3 className="text-lg font-bold text-[#FFF9F2] flex items-center gap-2">
+                <Plus className="w-5 h-5 text-[#D4A017]" />
+                <span>Add New Lead (Team A)</span>
               </h3>
-              <button onClick={() => setShowSubmitModal(false)} className="text-[#64748B] hover:text-white font-bold">✕</button>
+              <button onClick={() => setShowSubmitModal(false)} className="text-[#C9B8BE] hover:text-[#FFF9F2] font-bold">✕</button>
             </div>
 
-            <form onSubmit={handleSubmitLead} className="space-y-4 text-xs">
-              
-              {duplicateWarning && (
-                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                  <span>{duplicateWarning}</span>
-                </div>
-              )}
+            <form onSubmit={handleAddLeadSubmit} className="space-y-4 text-xs font-mono">
+              <div className="space-y-1">
+                <label className="text-[#C9B8BE]">LEAD NAME *</label>
+                <input
+                  type="text"
+                  required
+                  value={leadName}
+                  onChange={(e) => setLeadName(e.target.value)}
+                  placeholder="e.g. ABC / Rohan Verma"
+                  className="w-full p-2.5 rounded-xl bg-[#1F1117] border border-[#3A1F2B] text-[#FFF9F2] outline-none focus:border-[#D4A017]"
+                />
+              </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[#9BA7B7] font-mono">COMPANY NAME</label>
-                  <input
-                    type="text"
-                    required
-                    value={company}
-                    onChange={(e) => handleCompanyChange(e.target.value)}
-                    placeholder="e.g. Vertex Digital Labs"
-                    className="w-full p-2.5 rounded-xl bg-[#0D1118] border border-white/10 text-white outline-none focus:border-[#C7FF3D]"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[#9BA7B7] font-mono">PRIMARY CONTACT PERSON</label>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Rohan Verma"
-                    className="w-full p-2.5 rounded-xl bg-[#0D1118] border border-white/10 text-white outline-none focus:border-[#C7FF3D]"
-                  />
-                </div>
+              <div className="space-y-1">
+                <label className="text-[#C9B8BE]">COMPANY NAME *</label>
+                <input
+                  type="text"
+                  required
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="e.g. XYZ Solutions"
+                  className="w-full p-2.5 rounded-xl bg-[#1F1117] border border-[#3A1F2B] text-[#FFF9F2] outline-none focus:border-[#D4A017]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[#C9B8BE]">CONTACT NUMBER OR EMAIL ID *</label>
+                <input
+                  type="text"
+                  required
+                  value={contactOrEmail}
+                  onChange={(e) => setContactOrEmail(e.target.value)}
+                  placeholder="e.g. 9876543210 or contact@xyz.com"
+                  className="w-full p-2.5 rounded-xl bg-[#1F1117] border border-[#3A1F2B] text-[#FFF9F2] outline-none focus:border-[#D4A017]"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[#9BA7B7] font-mono">PHONE NUMBER</label>
+                  <label className="text-[#C9B8BE]">AREA / LOCATION *</label>
                   <input
                     type="text"
                     required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 98765 43210"
-                    className="w-full p-2.5 rounded-xl bg-[#0D1118] border border-white/10 text-white outline-none focus:border-[#C7FF3D]"
+                    value={area}
+                    onChange={(e) => setArea(e.target.value)}
+                    placeholder="e.g. Chennai, Bengaluru"
+                    className="w-full p-2.5 rounded-xl bg-[#1F1117] border border-[#3A1F2B] text-[#FFF9F2] outline-none focus:border-[#D4A017]"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[#9BA7B7] font-mono">EMAIL ADDRESS</label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="rohan@vertex.in"
-                    className="w-full p-2.5 rounded-xl bg-[#0D1118] border border-white/10 text-white outline-none focus:border-[#C7FF3D]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[#9BA7B7] font-mono">ESTIMATED BUDGET (₹ INR)</label>
-                  <input
-                    type="number"
-                    required
-                    value={budget}
-                    onChange={(e) => setBudget(e.target.value)}
-                    placeholder="150000"
-                    className="w-full p-2.5 rounded-xl bg-[#0D1118] border border-white/10 text-white outline-none focus:border-[#C7FF3D]"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[#9BA7B7] font-mono">LEAD SOURCE</label>
+                  <label className="text-[#C9B8BE]">REQUIREMENT CATEGORY</label>
                   <select
-                    value={source}
-                    onChange={(e) => setSource(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-[#0D1118] border border-white/10 text-white outline-none focus:border-[#C7FF3D]"
+                    value={requirementText}
+                    onChange={(e) => setRequirementText(e.target.value)}
+                    className="w-full p-2.5 rounded-xl bg-[#1F1117] border border-[#3A1F2B] text-[#FFF9F2] outline-none focus:border-[#D4A017]"
                   >
-                    <option value="LinkedIn Direct">LinkedIn Direct</option>
-                    <option value="Upwork Agency">Upwork Agency</option>
-                    <option value="Website Form">Website Form</option>
-                    <option value="Direct Referral">Direct Referral</option>
+                    <option value="Website Development">Website Development</option>
+                    <option value="E-commerce">E-commerce</option>
+                    <option value="Advertisement / Ad Management">Advertisement / Ad Management</option>
+                    <option value="Testing">Testing</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[#9BA7B7] font-mono">PROJECT REQUIREMENT</label>
-                <textarea
-                  rows={2}
-                  required
-                  value={requirement}
-                  onChange={(e) => setRequirement(e.target.value)}
-                  placeholder="Describe technical stack and client requirements..."
-                  className="w-full p-2.5 rounded-xl bg-[#0D1118] border border-white/10 text-white outline-none focus:border-[#C7FF3D]"
-                />
+              <div className="p-3 rounded-xl bg-[#1F1117] border border-[#D4A017]/30 text-[11px] text-[#D4A017]">
+                💡 Lead ID will be auto-generated upon submission.
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#3A1F2B]">
                 <button
                   type="button"
                   onClick={() => setShowSubmitModal(false)}
-                  className="px-4 py-2 rounded-xl bg-white/5 text-white hover:bg-white/10"
+                  className="px-4 py-2 rounded-xl bg-[#1F1117] text-[#FFF9F2] hover:bg-[#3A1F2B]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-[#C7FF3D] text-black font-bold hover:bg-[#b5f027]"
+                  className="px-5 py-2.5 rounded-xl bg-[#D4A017] text-[#1F1117] font-bold hover:bg-[#B8860B] cursor-pointer shadow-[0_0_15px_rgba(212,160,23,0.35)]"
                 >
-                  Generate Lead & Award Commission
+                  Generate Lead ID & Save
                 </button>
               </div>
 

@@ -1,31 +1,26 @@
 import React from 'react';
-import { useAuth } from '../../services/authContext';
-import { ZentrixLogo } from '../branding/ZentrixLogo';
 import {
   LayoutDashboard,
-  Users,
-  GitMerge,
-  KanbanSquare,
-  Clock,
-  CircleDollarSign,
-  Receipt,
-  FileText,
-  Building2,
-  Briefcase,
+  TrendingUp,
   PhoneCall,
-  Sparkles,
+  Briefcase,
+  Building2,
+  KanbanSquare,
+  Users,
+  FileText,
   ShieldCheck,
   Settings,
-  LogOut,
   ChevronLeft,
   ChevronRight,
-  TrendingUp,
+  LogOut,
   X
 } from 'lucide-react';
+import { ZentrixLogo } from '../branding/ZentrixLogo';
+import { useAuth } from '../../services/authContext';
 
 interface SidebarProps {
   collapsed: boolean;
-  setCollapsed: (v: boolean) => void;
+  setCollapsed: (collapsed: boolean) => void;
   mobileOpen?: boolean;
   setMobileOpen?: (v: boolean) => void;
 }
@@ -34,29 +29,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, mobil
   const { user, role, activeSection, setActiveSection, logout } = useAuth();
 
   const navItems = [
-    { id: 'Overview', label: 'Overview', icon: LayoutDashboard, roles: ['ADMIN'] },
-    { id: 'Lead Journey', label: 'Lead Journey', icon: TrendingUp, roles: ['ADMIN', 'TEAM_A'] },
-    { id: 'Follow-ups', label: 'Calling & Follow-ups', icon: PhoneCall, roles: ['ADMIN', 'TEAM_B'] },
-    { id: 'Clients', label: 'Clients', icon: Building2, roles: ['ADMIN'] },
-    { id: 'Projects', label: 'Projects', icon: Briefcase, roles: ['ADMIN'] },
-    { id: 'Tasks', label: 'Task Kanban', icon: KanbanSquare, roles: ['ADMIN', 'TEAM_A', 'TEAM_B'] },
-    { id: 'Time Tracker', label: 'Time Tracking', icon: Clock, roles: ['ADMIN', 'TEAM_A', 'TEAM_B'] },
-    { id: 'Team', label: 'Team Rosters', icon: Users, roles: ['ADMIN'] },
-    { id: 'Contributions', label: 'Contributions', icon: GitMerge, roles: ['ADMIN'] },
-    { id: 'Commission', label: 'Commission Engine', icon: CircleDollarSign, roles: ['ADMIN'] },
-    { id: 'Billing', label: 'Billing & Revenue', icon: Receipt, roles: ['ADMIN'] },
-    { id: 'Analytics', label: 'Reports & Analytics', icon: FileText, roles: ['ADMIN'] },
-    { id: 'AI Intelligence', label: 'AI Intelligence', icon: Sparkles, roles: ['ADMIN'] },
-    { id: 'Audit Log', label: 'Audit Logs', icon: ShieldCheck, roles: ['ADMIN'] },
-    { id: 'Settings', label: 'Settings', icon: Settings, roles: ['ADMIN', 'TEAM_A', 'TEAM_B'] },
+    { id: 'Overview', label: 'Dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'TEAM_A', 'TEAM_B', 'TEAM_C'] },
+    { id: 'Team A', label: 'Team A', icon: TrendingUp, roles: ['ADMIN', 'TEAM_A'] },
+    { id: 'Team B', label: 'Team B', icon: PhoneCall, roles: ['ADMIN', 'TEAM_B'] },
+    { id: 'Team C', label: 'Team C', icon: Briefcase, roles: ['ADMIN', 'TEAM_C'] },
+    { id: 'Clients', label: 'Clients', icon: Building2, roles: ['ADMIN', 'TEAM_B', 'TEAM_C'] },
+    { id: 'Projects', label: 'Projects', icon: KanbanSquare, roles: ['ADMIN', 'TEAM_C'] },
+    { id: 'Team', label: 'Team Members', icon: Users, roles: ['ADMIN'] },
+    { id: 'Reports', label: 'Reports', icon: FileText, roles: ['ADMIN'] },
+    { id: 'Activity History', label: 'Activity History', icon: ShieldCheck, roles: ['ADMIN'] },
+    { id: 'Settings', label: 'Settings', icon: Settings, roles: ['ADMIN', 'TEAM_A', 'TEAM_B', 'TEAM_C'] },
   ];
 
   const filteredNavItems = navItems.filter(item => !role || item.roles.includes(role));
 
   const roleColors: Record<string, string> = {
-    ADMIN: 'border-[#38E8FF] text-[#38E8FF] bg-[#38E8FF]/10',
-    TEAM_A: 'border-[#C7FF3D] text-[#C7FF3D] bg-[#C7FF3D]/10',
-    TEAM_B: 'border-[#3B82F6] text-[#3B82F6] bg-[#3B82F6]/10',
+    ADMIN: 'border-[#D4A017] text-[#D4A017] bg-[#D4A017]/10',
+    TEAM_A: 'border-[#E8C766] text-[#E8C766] bg-[#E8C766]/10',
+    TEAM_B: 'border-[#B8860B] text-[#B8860B] bg-[#B8860B]/10',
+    TEAM_C: 'border-[#D4A017] text-[#D4A017] bg-[#D4A017]/10',
   };
 
   const handleSelectSection = (id: string) => {
@@ -78,18 +69,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, mobil
 
       {/* Main Sidebar Component */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 bg-[#0D1118]/98 backdrop-blur-2xl border-r border-white/10 transition-all duration-300 flex flex-col justify-between ${
+        className={`fixed top-0 bottom-0 left-0 z-50 bg-[#1F1117]/95 backdrop-blur-2xl border-r border-[#3A1F2B] transition-all duration-200 flex flex-col justify-between ${
           mobileOpen ? 'translate-x-0 w-72' : '-translate-x-full md:translate-x-0'
         } ${collapsed ? 'md:w-20' : 'md:w-64'}`}
       >
         {/* Top Branding */}
-        <div className="p-4 border-b border-white/10 flex items-center justify-between">
+        <div className="p-4 border-b border-[#3A1F2B] flex items-center justify-between">
           <ZentrixLogo size="sm" />
 
           {/* Desktop Collapse Toggle */}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="hidden md:flex w-7 h-7 rounded-lg bg-white/5 border border-white/10 items-center justify-center text-[#9BA7B7] hover:text-[#38E8FF] hover:border-[#38E8FF]/50 hover:bg-white/10 transition-all"
+            className="hidden md:flex w-7 h-7 rounded-lg bg-[#2B1720] border border-[#3A1F2B] items-center justify-center text-[#C9B8BE] hover:text-[#D4A017] hover:border-[#D4A017]/50 transition-all cursor-pointer"
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
@@ -97,7 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, mobil
           {/* Mobile Close Button */}
           <button
             onClick={() => setMobileOpen?.(false)}
-            className="flex md:hidden w-8 h-8 rounded-xl bg-white/5 border border-white/10 items-center justify-center text-white hover:bg-red-500/20 hover:text-red-400 transition-all"
+            className="flex md:hidden w-8 h-8 rounded-xl bg-[#2B1720] border border-[#3A1F2B] items-center justify-center text-[#FFF9F2] hover:bg-red-500/20 hover:text-red-400 transition-all cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -112,16 +103,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, mobil
               <button
                 key={item.id}
                 onClick={() => handleSelectSection(item.id)}
-                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl font-medium text-sm transition-all duration-300 group ${
+                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl font-medium text-sm transition-all duration-200 group cursor-pointer ${
                   isActive
-                    ? 'bg-[#38E8FF]/15 text-[#38E8FF] border border-[#38E8FF]/50 shadow-[0_0_20px_rgba(56,232,255,0.25)] backdrop-blur-xl font-bold'
-                    : 'text-[#9BA7B7] hover:text-[#38E8FF] hover:bg-white/10 hover:backdrop-blur-xl hover:border-[#38E8FF]/40 border border-transparent'
+                    ? 'bg-[#5A1833] text-[#D4A017] border border-[#D4A017]/50 shadow-[0_0_20px_rgba(212,160,23,0.3)] backdrop-blur-xl font-bold'
+                    : 'text-[#C9B8BE] hover:text-[#FFF9F2] hover:bg-[#2B1720] hover:border-[#D4A017]/30 hover:shadow-[0_0_12px_rgba(212,160,23,0.2)] border border-transparent'
                 }`}
               >
-                <Icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-300 ${
+                <Icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${
                   isActive
-                    ? 'text-[#38E8FF] scale-110'
-                    : 'group-hover:text-[#38E8FF] group-hover:scale-110'
+                    ? 'text-[#D4A017] scale-110'
+                    : 'group-hover:text-[#D4A017] group-hover:scale-110'
                 }`} />
                 <span>{item.label}</span>
               </button>
@@ -129,32 +120,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, mobil
           })}
         </div>
 
-        {/* User Profile & Role Info Footer */}
-        <div className="p-3 border-t border-white/10 bg-[#05070B]/80">
-          <div className="flex items-center justify-between gap-3 p-2 rounded-xl bg-white/5 border border-white/5">
-            <div className="flex items-center gap-2.5 min-w-0">
+        {/* Bottom User Card & Quick Logout */}
+        <div className="p-3 border-t border-[#3A1F2B] bg-[#2B1720]/60">
+          <div className="flex items-center justify-between p-2 rounded-xl bg-[#1F1117] border border-[#3A1F2B]">
+            <div className="flex items-center gap-2.5 overflow-hidden">
               <img
-                src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
-                alt={user?.name}
-                className="w-9 h-9 rounded-full object-cover border border-white/20 flex-shrink-0"
+                src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
+                alt={user?.name || 'User'}
+                className="w-8 h-8 rounded-full object-cover border border-[#D4A017]/40"
               />
-              <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold text-white truncate">{user?.name}</div>
-                <div className={`mt-0.5 inline-block text-[9px] font-mono font-semibold uppercase px-2 py-0.5 rounded-full border ${roleColors[role || 'ADMIN']}`}>
-                  {role}
+              {!collapsed && (
+                <div className="truncate text-left font-mono">
+                  <div className="text-xs font-bold text-[#FFF9F2] truncate">{user?.name}</div>
+                  <div className="text-[10px] text-[#C9B8BE] truncate">{user?.email}</div>
                 </div>
-              </div>
+              )}
             </div>
 
-            <button
-              onClick={logout}
-              title="Logout"
-              className="p-1.5 rounded-lg text-[#64748B] hover:text-red-400 hover:bg-red-500/10 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            {!collapsed && (
+              <button
+                onClick={logout}
+                className="p-2 rounded-lg text-[#C9B8BE] hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                title="Log Out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
+
       </aside>
     </>
   );

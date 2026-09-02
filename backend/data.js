@@ -15,7 +15,7 @@ export const initialData = {
       id: "usr_team_a_primary",
       email: "teama@zentrix.com",
       password: "TeamA@123",
-      name: "Team A Lead",
+      name: "Team A Member",
       role: "TEAM_A",
       team: "TEAM_A",
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
@@ -71,7 +71,7 @@ export const initialData = {
       id: "usr_team_b_primary",
       email: "teamb@zentrix.com",
       password: "TeamB@123",
-      name: "Team B Lead",
+      name: "Team B Member",
       role: "TEAM_B",
       team: "TEAM_B",
       avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80",
@@ -122,7 +122,50 @@ export const initialData = {
       callsCompleted: 88,
       qualifiedLeads: 22,
       earnedCommission: 4400,
+      aadhaarNumber: "7788-9900-1102"
     },
+    {
+      id: "usr_team_c_primary",
+      email: "teamc@zentrix.com",
+      password: "TeamC@123",
+      name: "Team C Member",
+      role: "TEAM_C",
+      team: "TEAM_C",
+      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
+      status: "active",
+      performanceScore: 97,
+      projectsAssigned: 8,
+      earnedCommission: 12500,
+      aadhaarNumber: "4455-6677-8899"
+    },
+    {
+      id: "usr_team_c_1",
+      email: "suresh.k@zentrix.com",
+      password: "TeamC@123",
+      name: "Suresh K",
+      role: "TEAM_C",
+      team: "TEAM_C",
+      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
+      status: "active",
+      performanceScore: 94,
+      projectsAssigned: 6,
+      earnedCommission: 9800,
+      aadhaarNumber: "1234-5678-5566"
+    },
+    {
+      id: "usr_team_c_2",
+      email: "aditya.p@zentrix.com",
+      password: "TeamC@123",
+      name: "Aditya P",
+      role: "TEAM_C",
+      team: "TEAM_C",
+      avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
+      status: "active",
+      performanceScore: 91,
+      projectsAssigned: 5,
+      earnedCommission: 7500,
+      aadhaarNumber: "9988-7766-3344"
+    }
   ],
 
   commissionRules: {

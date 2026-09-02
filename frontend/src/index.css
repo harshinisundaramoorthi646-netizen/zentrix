@@ -8,59 +8,53 @@
   }
   
   body {
-    background-color: #080A0F;
-    color: #F5F7FA;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #1F1117;
+    color: #FFF9F2;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   }
 }
 
-/* Glassmorphism & Translucent Borders */
+/* Glassmorphism & Translucent Borders for Plum Red + Gold Palette */
 .glass-panel {
-  background: rgba(17, 23, 34, 0.7);
+  background: rgba(43, 23, 32, 0.9);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(212, 160, 23, 0.2);
 }
 
 .glass-card {
-  background: linear-gradient(135deg, rgba(22, 29, 41, 0.8) 0%, rgba(13, 17, 24, 0.6) 100%);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, rgba(43, 23, 32, 0.95) 0%, rgba(31, 17, 23, 0.9) 100%);
+  backdrop-filter: blur(14px);
+  border: 1px solid #3A1F2B;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5);
+  border-color: #D4A017;
+  box-shadow: 0 10px 30px -8px rgba(212, 160, 23, 0.3);
+  transform: translateY(-2px);
 }
 
 .glass-input {
-  background: rgba(13, 17, 24, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #F5F7FA;
+  background: #1F1117;
+  border: 1px solid #3A1F2B;
+  color: #FFF9F2;
+  transition: all 150ms ease-out;
 }
 
 .glass-input:focus {
-  border-color: #C7FF3D;
+  border-color: #D4A017;
   outline: none;
-  box-shadow: 0 0 15px -3px rgba(199, 255, 61, 0.25);
+  box-shadow: 0 0 18px -3px rgba(212, 160, 23, 0.4);
 }
 
-/* Custom glowing effects */
-.glow-lime {
-  box-shadow: 0 0 25px -5px rgba(199, 255, 61, 0.3);
+/* Interactive Gold Hover Glow Utilities */
+.glow-gold {
+  box-shadow: 0 0 25px -5px rgba(212, 160, 23, 0.4);
 }
 
-.glow-cyan {
-  box-shadow: 0 0 25px -5px rgba(56, 232, 255, 0.3);
-}
-
-.glow-violet {
-  box-shadow: 0 0 25px -5px rgba(155, 124, 255, 0.3);
-}
-
-.glow-coral {
-  box-shadow: 0 0 25px -5px rgba(255, 122, 138, 0.3);
+.glow-plum {
+  box-shadow: 0 0 25px -5px rgba(90, 24, 51, 0.5);
 }
 
 /* Custom Scrollbar */
@@ -70,43 +64,51 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #080A0F;
+  background: #1F1117;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
+  background: #3A1F2B;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #C7FF3D;
+  background: #D4A017;
 }
 
-/* Grid Pattern Background overlay */
+/* Grid Pattern Background Overlay with subtle Plum tint */
 .bg-grid-pattern {
   background-size: 40px 40px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(212, 160, 23, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(212, 160, 23, 0.04) 1px, transparent 1px);
 }
 
-/* Gradient Text */
-.text-gradient-lime {
-  background: linear-gradient(135deg, #F5F7FA 0%, #C7FF3D 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-gradient-cyan {
-  background: linear-gradient(135deg, #38E8FF 0%, #9B7CFF 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
+/* Gradient Text for Gold */
 .text-gradient-gold {
-  background: linear-gradient(135deg, #FFC857 0%, #FF7A8A 100%);
+  background: linear-gradient(135deg, #FFF9F2 0%, #E8C766 50%, #D4A017 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* Interactive Hover Lift & Glow for Cards & Buttons */
+.hover-gold-lift {
+  transition: all 200ms ease-out;
+}
+
+.hover-gold-lift:hover {
+  transform: translateY(-2px);
+  border-color: #D4A017 !important;
+  box-shadow: 0 8px 25px -5px rgba(212, 160, 23, 0.35);
+}
+
+/* Table Row Hover Highlight */
+tr.hover-row {
+  transition: background-color 150ms ease-out, border-color 150ms ease-out;
+}
+
+tr.hover-row:hover {
+  background-color: rgba(90, 24, 51, 0.4) !important;
 }
 
 /* Respect Reduced Motion */

@@ -1,22 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../services/authContext';
+import React, { useState } from 'react';
 import { Search, Bell, Shield, Menu } from 'lucide-react';
-import { apiService } from '../../services/api';
-import { NotificationItem } from '../../types';
+import { useAuth } from '../../services/authContext';
+import { mockNotifications } from '../../services/mockData';
 
 interface HeaderProps {
-  onOpenCommandPalette: () => void;
   onOpenMobileMenu?: () => void;
+  onOpenCommandPalette?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenCommandPalette, onOpenMobileMenu }) => {
+export const Header: React.FC<HeaderProps> = ({
+  onOpenMobileMenu,
+  onOpenCommandPalette
+}) => {
   const { user, role, activeSection } = useAuth();
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [showNotifDrawer, setShowNotifDrawer] = useState(false);
-
-  useEffect(() => {
-    apiService.getNotifications().then(setNotifications).catch(() => {});
-  }, []);
+  const [notifications, setNotifications] = useState(mockNotifications);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -25,14 +23,14 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCommandPalette, onOpenMobi
   };
 
   return (
-    <header className="sticky top-0 z-20 h-16 bg-[#0D1118]/90 backdrop-blur-xl border-b border-white/10 px-4 sm:px-8 flex items-center justify-between">
+    <header className="sticky top-0 z-20 h-16 bg-[#1F1117]/90 backdrop-blur-xl border-b border-[#3A1F2B] px-4 sm:px-8 flex items-center justify-between">
       
       {/* Left Mobile Menu Toggle & Title */}
       <div className="flex items-center gap-3">
         {onOpenMobileMenu && (
           <button
             onClick={onOpenMobileMenu}
-            className="flex md:hidden items-center gap-2 p-2 rounded-xl bg-[#38E8FF]/10 border border-[#38E8FF]/30 text-[#38E8FF] hover:bg-[#38E8FF]/20 transition-all cursor-pointer"
+            className="flex md:hidden items-center gap-2 p-2 rounded-xl bg-[#5A1833]/40 border border-[#D4A017]/30 text-[#D4A017] hover:bg-[#5A1833] hover:border-[#D4A017] hover:shadow-[0_0_15px_rgba(212,160,23,0.3)] transition-all cursor-pointer"
             title="Open Options Menu"
           >
             <Menu className="w-5 h-5" />
@@ -41,10 +39,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCommandPalette, onOpenMobi
         )}
 
         <div>
-          <h1 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-base sm:text-lg font-bold text-[#FFF9F2] tracking-tight flex items-center gap-2">
             <span>{activeSection}</span>
-            <span className="hidden sm:inline-block text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[#9BA7B7] font-mono font-normal">
-              ZENTRIX Core
+            <span className="hidden sm:inline-block text-xs px-2.5 py-0.5 rounded-full bg-[#2B1720] border border-[#3A1F2B] text-[#C9B8BE] font-mono font-normal">
+              ZENTRIX Platform
             </span>
           </h1>
         </div>
@@ -56,11 +54,11 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCommandPalette, onOpenMobi
         {/* Command Palette Trigger */}
         <button
           onClick={onOpenCommandPalette}
-          className="hidden sm:flex items-center gap-3 px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 text-[#9BA7B7] hover:text-white transition-all text-xs font-mono"
+          className="hidden sm:flex items-center gap-3 px-3.5 py-1.5 rounded-xl bg-[#2B1720] border border-[#3A1F2B] hover:border-[#D4A017]/50 text-[#C9B8BE] hover:text-[#FFF9F2] hover:shadow-[0_0_15px_rgba(212,160,23,0.25)] transition-all text-xs font-mono cursor-pointer"
         >
-          <Search className="w-3.5 h-3.5 text-[#38E8FF]" />
+          <Search className="w-3.5 h-3.5 text-[#D4A017]" />
           <span>Quick search...</span>
-          <kbd className="px-1.5 py-0.5 rounded bg-black/40 border border-white/10 text-[10px] text-white">
+          <kbd className="px-1.5 py-0.5 rounded bg-[#1F1117] border border-[#3A1F2B] text-[10px] text-[#FFF9F2]">
             Ctrl + K
           </kbd>
         </button>
@@ -69,11 +67,11 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCommandPalette, onOpenMobi
         <div className="relative">
           <button
             onClick={() => setShowNotifDrawer(!showNotifDrawer)}
-            className="relative p-2 rounded-xl bg-white/5 border border-white/10 text-[#9BA7B7] hover:text-white hover:bg-white/10 transition-colors"
+            className="relative p-2 rounded-xl bg-[#2B1720] border border-[#3A1F2B] text-[#C9B8BE] hover:text-[#D4A017] hover:border-[#D4A017]/40 hover:shadow-[0_0_15px_rgba(212,160,23,0.25)] transition-all cursor-pointer"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#FF7A8A] text-black font-bold text-[10px] flex items-center justify-center animate-pulse">
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#D4A017] text-[#1F1117] font-bold text-[10px] flex items-center justify-center animate-pulse shadow-[0_0_10px_rgba(212,160,23,0.5)]">
                 {unreadCount}
               </span>
             )}
@@ -81,14 +79,14 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCommandPalette, onOpenMobi
 
           {/* Notifications Dropdown Panel */}
           {showNotifDrawer && (
-            <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl bg-[#111722] border border-white/15 shadow-2xl p-4 z-50 space-y-3">
-              <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                <span className="text-xs font-bold font-mono text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <Bell className="w-3.5 h-3.5 text-[#38E8FF]" /> Zentrix Activity Stream
+            <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl bg-[#2B1720] border border-[#3A1F2B] shadow-2xl p-4 z-50 space-y-3">
+              <div className="flex items-center justify-between border-b border-[#3A1F2B] pb-2">
+                <span className="text-xs font-bold font-mono text-[#FFF9F2] uppercase tracking-wider flex items-center gap-1.5">
+                  <Bell className="w-3.5 h-3.5 text-[#D4A017]" /> Zentrix Activity Stream
                 </span>
                 <button
                   onClick={markAllRead}
-                  className="text-[10px] font-mono text-[#38E8FF] hover:underline"
+                  className="text-[10px] font-mono text-[#D4A017] hover:underline"
                 >
                   Mark all read
                 </button>
@@ -99,14 +97,14 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCommandPalette, onOpenMobi
                   <div
                     key={n.id}
                     className={`p-2.5 rounded-xl border text-xs space-y-1 transition-colors ${
-                      n.read ? 'bg-white/5 border-white/5 opacity-70' : 'bg-[#0D1118] border-[#38E8FF]/30'
+                      n.read ? 'bg-[#1F1117] border-[#3A1F2B] opacity-70' : 'bg-[#1F1117] border-[#D4A017]/30'
                     }`}
                   >
-                    <div className="flex items-center justify-between font-semibold text-white">
+                    <div className="flex items-center justify-between font-semibold text-[#FFF9F2]">
                       <span>{n.title}</span>
-                      <span className="text-[10px] text-[#64748B] font-mono">{n.timestamp}</span>
+                      <span className="text-[10px] text-[#C9B8BE] font-mono">{n.timestamp}</span>
                     </div>
-                    <p className="text-[#9BA7B7]">{n.message}</p>
+                    <p className="text-[#C9B8BE]">{n.message}</p>
                   </div>
                 ))}
               </div>
@@ -114,11 +112,32 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCommandPalette, onOpenMobi
           )}
         </div>
 
-        {/* User Role Badge */}
-        <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 rounded-xl bg-[#0D1118] border border-white/10 text-xs">
-          <Shield className="w-3.5 h-3.5 text-[#38E8FF]" />
-          <span className="text-white font-mono font-semibold truncate max-w-[90px] sm:max-w-none">{user?.name}</span>
-          <span className="text-[10px] text-[#38E8FF] font-mono font-bold">({role})</span>
+        {/* Interactive Role Switcher */}
+        <div className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 rounded-xl bg-[#2B1720] border border-[#3A1F2B] hover:border-[#D4A017]/40 transition-all text-xs">
+          <Shield className="w-3.5 h-3.5 text-[#D4A017]" />
+          <span className="text-[#FFF9F2] font-mono font-semibold truncate max-w-[90px] sm:max-w-none">{user?.name}</span>
+          <select
+            value={role || 'ADMIN'}
+            onChange={(e) => {
+              const newRole = e.target.value;
+              const targetEmail =
+                newRole === 'ADMIN'
+                  ? 'admin@zentrix.com'
+                  : newRole === 'TEAM_A'
+                  ? 'priya.s@zentrix.com'
+                  : newRole === 'TEAM_B'
+                  ? 'rahul.m@zentrix.com'
+                  : 'suresh.k@zentrix.com';
+              useAuth().login(targetEmail, 'password');
+            }}
+            className="bg-[#1F1117] text-[#D4A017] text-[11px] font-mono font-bold py-0.5 px-2 rounded-lg border border-[#D4A017]/40 outline-none cursor-pointer hover:border-[#D4A017] transition-all"
+            title="Switch User Role to test different dashboards"
+          >
+            <option value="ADMIN">👑 ADMIN</option>
+            <option value="TEAM_A">🚀 TEAM A</option>
+            <option value="TEAM_B">📞 TEAM B</option>
+            <option value="TEAM_C">⚡ TEAM C</option>
+          </select>
         </div>
 
       </div>

@@ -1,42 +1,30 @@
 import mongoose from 'mongoose';
 
 export const connectDB = async () => {
-  const defaultAtlasUri = 'mongodb+srv://Harshini:%23harsh@cluster0.nic8iuj.mongodb.net/zentrix_db?retryWrites=true&w=majority&appName=Cluster0';
-  const uri = (process.env.MONGODB_URI && process.env.MONGODB_URI.trim() !== '') 
-    ? process.env.MONGODB_URI 
-    : defaultAtlasUri;
+  const uri = process.env.MONGODB_URI ? process.env.MONGODB_URI.trim() : '';
+
+  if (!uri) {
+    console.warn('⚠️ MONGODB_URI is not set in environment. Running backend in Standalone In-Memory Mode.');
+    return false;
+  }
 
   if (process.env.DISCONNECT_DB === 'true') {
     if (mongoose.connection.readyState !== 0) {
       await mongoose.disconnect();
     }
-    console.log('ℹ️ Database disconnected. Running backend in Standalone In-Memory Mode.');
+    console.log('ℹ️ Database disconnected per configuration. Running in Standalone In-Memory Mode.');
     return false;
   }
 
-  const primaryUri = uri;
-  const localUri = 'mongodb://127.0.0.1:27017/zentrix_db';
-
-
-
   try {
-    const conn = await mongoose.connect(primaryUri, { serverSelectionTimeoutMS: 10000 });
-    console.log(`🍃 MongoDB Atlas Connected: ${conn.connection.host}`);
+    const conn = await mongoose.connect(uri, { serverSelectionTimeoutMS: 10000 });
+    console.log(`🍃 MongoDB Atlas Connected Successfully! Host: ${conn.connection.host} | Database: ${conn.connection.name}`);
     return true;
   } catch (error) {
-    console.warn(`⚠️ Primary MongoDB Connection Error (${error.message}). Trying local fallback...`);
-    if (primaryUri !== localUri) {
-      try {
-        const conn = await mongoose.connect(localUri, { serverSelectionTimeoutMS: 3000 });
-        console.log(`🍃 Local MongoDB Connected: ${conn.connection.host}`);
-        return true;
-      } catch (localErr) {
-        console.error(`❌ Local MongoDB Connection Error: ${localErr.message}`);
-      }
-    }
+    // Sanitize error message to prevent accidental credential leakage in logs
+    const sanitizedMsg = (error.message || '').replace(/:[^@]+@/, ':****@');
+    console.error(`❌ MongoDB Atlas Connection Error: ${sanitizedMsg}`);
     console.warn('⚠️ Falling back to Standalone In-Memory Mode.');
     return false;
   }
 };
-
-
