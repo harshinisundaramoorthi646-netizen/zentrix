@@ -248,7 +248,7 @@ const addNotification = (title, message, type = 'info') => {
  *       401:
  *         description: Invalid email address or incorrect password.
  */
-app.post(['/api/auth/login', '/auth/login'], async (req, res) => {
+const handleLogin = async (req, res) => {
   const { email, password } = req.body || {};
 
   const cleanEmail = (email || '').trim().toLowerCase();
@@ -299,10 +299,14 @@ app.post(['/api/auth/login', '/auth/login'], async (req, res) => {
 
   const token = generateToken(user);
   logAuditEvent(user.name, 'USER_LOGIN', `Logged in as ${user.role}`);
-  
+
   const { password: _, ...safeUser } = user;
   res.json({ user: safeUser, token });
-});
+};
+
+app.post('/login', handleLogin);
+app.post('/auth/login', handleLogin);
+app.post('/api/auth/login', handleLogin);
 
 /**
  * @openapi
