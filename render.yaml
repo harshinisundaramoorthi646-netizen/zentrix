@@ -12,3 +12,15 @@ services:
         value: mongodb+srv://Harshini:%23harsh646@cluster0.nic8iuj.mongodb.net/zentrix_db?retryWrites=true&w=majority
       - key: JWT_SECRET
         value: zentrix_super_secret_jwt_key_2026
+
+  - type: web
+    name: zentrix-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+

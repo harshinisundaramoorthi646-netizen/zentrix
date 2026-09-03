@@ -3,7 +3,7 @@ export const initialData = {
     {
       id: "usr_admin",
       email: "admin@zentrix.com",
-      password: "Admin@123",
+      password: "Zx9#kP2$vL8n",
       name: "Vikram Malhotra",
       role: "ADMIN",
       team: "MANAGEMENT",
@@ -14,7 +14,7 @@ export const initialData = {
     {
       id: "usr_team_a_primary",
       email: "teama@zentrix.com",
-      password: "TeamA@123",
+      password: "K8#mP3$vL9xR",
       name: "Team A Member",
       role: "TEAM_A",
       team: "TEAM_A",
@@ -28,8 +28,22 @@ export const initialData = {
     {
       id: "usr_team_a_1",
       email: "team.a@zentrix.com",
-      password: "TeamA@123",
+      password: "K8#mP3$vL9xR",
       name: "Arun Kumar",
+      role: "TEAM_A",
+      team: "TEAM_A",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      status: "active",
+      performanceScore: 92,
+      leadsSubmitted: 42,
+      conversions: 14,
+      earnedCommission: 4200,
+    },
+    {
+      id: "usr_team_a_arun",
+      email: "arun.k@zentrix.com",
+      password: "K8#mP3$vL9xR",
+      name: "Arun K",
       role: "TEAM_A",
       team: "TEAM_A",
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
@@ -42,7 +56,7 @@ export const initialData = {
     {
       id: "usr_team_a_2",
       email: "priya.s@zentrix.com",
-      password: "TeamA@123",
+      password: "K8#mP3$vL9xR",
       name: "Priya S",
       role: "TEAM_A",
       team: "TEAM_A",
@@ -56,7 +70,7 @@ export const initialData = {
     {
       id: "usr_team_a_3",
       email: "karthik.r@zentrix.com",
-      password: "TeamA@123",
+      password: "K8#mP3$vL9xR",
       name: "Karthik R",
       role: "TEAM_A",
       team: "TEAM_A",
@@ -70,7 +84,7 @@ export const initialData = {
     {
       id: "usr_team_b_primary",
       email: "teamb@zentrix.com",
-      password: "TeamB@123",
+      password: "Q7#nP4$wM1yS",
       name: "Team B Member",
       role: "TEAM_B",
       team: "TEAM_B",
@@ -84,7 +98,7 @@ export const initialData = {
     {
       id: "usr_team_b_1",
       email: "team.b@zentrix.com",
-      password: "TeamB@123",
+      password: "Q7#nP4$wM1yS",
       name: "Rahul M",
       role: "TEAM_B",
       team: "TEAM_B",
@@ -98,7 +112,7 @@ export const initialData = {
     {
       id: "usr_team_b_2",
       email: "sneha.v@zentrix.com",
-      password: "TeamB@123",
+      password: "Q7#nP4$wM1yS",
       name: "Sneha V",
       role: "TEAM_B",
       team: "TEAM_B",
@@ -112,7 +126,7 @@ export const initialData = {
     {
       id: "usr_team_b_3",
       email: "vijay.k@zentrix.com",
-      password: "TeamB@123",
+      password: "Q7#nP4$wM1yS",
       name: "Vijay K",
       role: "TEAM_B",
       team: "TEAM_B",
@@ -127,7 +141,7 @@ export const initialData = {
     {
       id: "usr_team_c_primary",
       email: "teamc@zentrix.com",
-      password: "TeamC@123",
+      password: "R6#pQ5$xN2zT",
       name: "Team C Member",
       role: "TEAM_C",
       team: "TEAM_C",
@@ -141,7 +155,7 @@ export const initialData = {
     {
       id: "usr_team_c_1",
       email: "suresh.k@zentrix.com",
-      password: "TeamC@123",
+      password: "R6#pQ5$xN2zT",
       name: "Suresh K",
       role: "TEAM_C",
       team: "TEAM_C",
@@ -155,7 +169,7 @@ export const initialData = {
     {
       id: "usr_team_c_2",
       email: "aditya.p@zentrix.com",
-      password: "TeamC@123",
+      password: "R6#pQ5$xN2zT",
       name: "Aditya P",
       role: "TEAM_C",
       team: "TEAM_C",

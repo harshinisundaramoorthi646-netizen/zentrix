@@ -241,14 +241,14 @@ const addNotification = (title, message, type = 'info') => {
  *                 example: admin@zentrix.com
  *               password:
  *                 type: string
- *                 example: Admin@123
+ *                 example: Zx9#kP2$vL8n
  *     responses:
  *       200:
  *         description: Authenticated user object and JWT token.
  *       401:
  *         description: Invalid email address or incorrect password.
  */
-app.post('/api/auth/login', async (req, res) => {
+app.post(['/api/auth/login', '/auth/login'], async (req, res) => {
   const { email, password } = req.body || {};
 
   const cleanEmail = (email || '').trim().toLowerCase();
@@ -319,7 +319,7 @@ app.post('/api/auth/login', async (req, res) => {
  *       401:
  *         description: Unauthorized token.
  */
-app.get('/api/auth/me', authenticateToken, async (req, res) => {
+app.get(['/api/auth/me', '/auth/me'], authenticateToken, async (req, res) => {
   let user = db.users.find(u => u.id === req.user.id);
   if (!user && isMongoConnected) {
     user = await User.findOne({ id: req.user.id }).lean();
